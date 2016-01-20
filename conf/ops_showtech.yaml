@@ -1,0 +1,20 @@
+---
+# Show Tech System Feature Definition
+  feature:
+  -
+    feature_desc: "Show Tech System"
+    feature_name: system
+    cli_cmds:
+      - "show version"
+      - "show system"
+      - "show vlan"
+
+# Show Tech LLDP Feature Definition
+  feature:
+  -
+    feature_desc: "Link Layer Discovery Protocol"
+    feature_name: lldp
+    cli_cmds:
+      - "show lldp configuration"
+      - "show lldp statistics"
+      - "show lldp neighbor-info"

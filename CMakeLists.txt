@@ -31,6 +31,9 @@ include_directories (${PROJECT_SOURCE_DIR}/${INCL_DIR} ${OVSCOMMON_INCLUDE_DIRS}
 # Rules to build ops-supportability library
 add_library (${SUPPORTABILITY_LIBS} SHARED ${SOURCES})
 
+# Rules to build supportability cli library
+add_subdirectory(src/cli)
+
 target_link_libraries(${SUPPORTABILITY_LIBS} ${OVSCOMMON_LIBRARIES} -lyaml -lsystemd)
 
 # Define compile flags
@@ -53,4 +56,4 @@ install(TARGETS ${SUPPORTABILITY_LIBS}
 install(FILES ${INCL_DIR}/eventlog.h
         DESTINATION include)
 
-    install(FILES ${CMAKE_BINARY_DIR}/${SRC_DIR}/opssupportability.pc DESTINATION lib/pkgconfig)
+install(FILES ${CMAKE_BINARY_DIR}/${SRC_DIR}/opssupportability.pc DESTINATION lib/pkgconfig)
