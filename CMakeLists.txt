@@ -22,15 +22,16 @@ set (INCL_DIR include)
 
 # Rules to locate needed libraries
 include(FindPkgConfig)
+pkg_check_modules(OVSCOMMON REQUIRED libovscommon)
 
 # Source files to build ops-supportability library
-set (SOURCES ${SRC_DIR}/eventlog.c)
-include_directories (${PROJECT_SOURCE_DIR}/${INCL_DIR})
+set (SOURCES ${SRC_DIR}/eventlog/eventlog.c)
+include_directories (${PROJECT_SOURCE_DIR}/${INCL_DIR} ${OVSCOMMON_INCLUDE_DIRS})
 
 # Rules to build ops-supportability library
 add_library (${SUPPORTABILITY_LIBS} SHARED ${SOURCES})
 
-target_link_libraries(${SUPPORTABILITY_LIBS})
+target_link_libraries(${SUPPORTABILITY_LIBS} ${OVSCOMMON_LIBRARIES} -lyaml -lsystemd)
 
 # Define compile flags
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -Wall -Werror")

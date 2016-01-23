@@ -1,0 +1,80 @@
+categories:
+# - event_category: ABC
+#   description: 'Events related to ABC'
+#   category_rank: xx
+- event_category: LLDP
+  description: 'Events related to LLDP'
+  category_rank: 01
+
+event_definitions:
+#- event_name: XYZ_UP
+#  event_category: ABC
+#  event_ID : xx001
+#  severity: LOG_INFO
+#  keys: key
+#  event_description_template:
+#      'XYZ is up with {key}'
+
+- event_name: LLDP_ENABLED
+  event_category: LLDP
+  event_ID : 01001
+  severity: LOG_INFO
+  keys: NA
+  event_description_template:
+      'LLDP Enabled'
+
+- event_name: LLDP_DISABLED
+  event_category: LLDP
+  event_ID : 01002
+  severity: LOG_INFO
+  keys: NA
+  event_description_template:
+      'LLDP Disabled'
+
+- event_name: LLDP_TX_TIMER
+  event_category: LLDP
+  event_ID : 01003
+  severity: LOG_INFO
+  keys: value
+  event_description_template:
+      'Configured LLDP tx-timer with {value}'
+
+- event_name: LLDP_NEIGHBOUR_ADD
+  event_category: LLDP
+  event_ID : 01004
+  severity: LOG_INFO
+  keys: interface
+  event_description_template:
+      'LLDP neighbour added on {interface}'
+
+- event_name: LLDP_NEIGHBOUR_UPDATE
+  event_category: LLDP
+  event_ID : 01005
+  severity: LOG_INFO
+  keys: interface
+  event_description_template:
+      'LLDP neighbour update on {interface}'
+
+- event_name: LLDP_NEIGHBOUR_DELETE
+  event_category: LLDP
+  event_ID : 01006
+  severity: LOG_INFO
+  keys: interface
+  event_description_template:
+      'LLDP neighbour deleted on {interface}'
+
+- event_name: MGMT_PATTERN
+  event_category: LLDP
+  event_ID : 01007
+  severity: LOG_INFO
+  keys: value
+  event_description_template:
+      'Configured LLDP Management pattern {value}'
+
+- event_name: LLDP_TX_HOLD
+  event_category: LLDP
+  event_ID : 01008
+  severity: LOG_INFO
+  keys: hold
+  event_description_template:
+      'Configured LLDP tx-hold with {hold}'
