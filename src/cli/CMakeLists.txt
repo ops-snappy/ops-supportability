@@ -42,12 +42,14 @@ include_directories (${INCL_DIR}
 # CLI libraries source files
 set (SOURCES_CLI ${PROJECT_SOURCE_DIR}/show_tech_vty.c
                  ${PROJECT_SOURCE_DIR}/../showtech/showtech.c
+                 ${PROJECT_SOURCE_DIR}/show_events_vty.c
+                 ${PROJECT_SOURCE_DIR}/supportability_vty.c
     )
 
 add_library (${LIBSUPPORTABILITYCLI} SHARED ${SOURCES_CLI})
 
 
-target_link_libraries(${LIBSUPPORTABILITYCLI} ${OVSCOMMON_LIBRARIES} -lyaml)
+target_link_libraries(${LIBSUPPORTABILITYCLI} ${OVSCOMMON_LIBRARIES} -lyaml -lsystemd)
 
 
 

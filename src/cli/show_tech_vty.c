@@ -463,28 +463,3 @@ DEFUN_NOLOCK (cli_platform_show_tech_feature,
   }
 
 #endif /* _ST_SUBFEATURE_ENABLED */
-
-
-/*
- * Function           : cli_pre_init
- * Responsibility     : Install the cli nodes
- */
-
-void
-cli_pre_init(void)
-{
-   /* Supportability Doesnt have any new node */
-
-}
-
-/*
- * Function           : cli_post_init
- * Responsibility     : Install the cli action routines
- */
-void
-cli_post_init()
-{
-  install_element (ENABLE_NODE, &cli_platform_show_tech_cmd);
-  install_element (ENABLE_NODE, &cli_platform_show_tech_list_cmd);
-  install_element (ENABLE_NODE, &cli_platform_show_tech_feature_cmd);
-}
