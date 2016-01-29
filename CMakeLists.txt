@@ -1,4 +1,4 @@
-# Copyright (C) 2015 Hewlett-Packard Development Company, L.P.
+# Copyright (C) 2016 Hewlett-Packard Development Company, L.P.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -53,7 +53,7 @@ install(TARGETS ${SUPPORTABILITY_LIBS}
         LIBRARY DESTINATION lib
 )
 
-install(FILES ${INCL_DIR}/eventlog.h
+install(FILES ${INCL_DIR}/eventlog.h   ${INCL_DIR}/diag_dump.h
         DESTINATION include)
 
 install(FILES ${CMAKE_BINARY_DIR}/${SRC_DIR}/opssupportability.pc DESTINATION lib/pkgconfig)
