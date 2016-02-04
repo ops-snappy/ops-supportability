@@ -32,6 +32,12 @@
 #include "jsonrpc.h"
 
 #define ARGC 2
+#define FREE(X)\
+        if(X) { free (X); X = NULL; }
+
+#define FCLOSE(X)\
+        if(X) { fclose(X); X = NULL; }
+
 
 VLOG_DEFINE_THIS_MODULE(vtysh_diag);
 
@@ -398,7 +404,7 @@ DEFUN (vtysh_diag_dump_show,
     } else {
         VLOG_ERR("%s feature is not present",argv[0]);
         vty_out(vty,"%s feature is not present %s",argv[0], VTY_NEWLINE);
-        return 1;
+        return CMD_WARNING;
     }
     if ( daemon_count  ==  daemon_resp ) {
         vty_out(vty,"Diagnostic dump captured for feature %s %s",
@@ -499,14 +505,28 @@ vtysh_diag_dump_daemon( char* daemon , char **cmd_type ,
     char *cmd_result=NULL, *cmd_error=NULL;
     int rc=0;
     FILE *fp=NULL;
+    char  diag_cmd_str[100];
 
+    if  (!(daemon && cmd_type)) {
+        VLOG_ERR("invalid parameter daemon or command ");
+        return CMD_WARNING;
+    }
+    /* user specified file path then open a file to write it */
+    if ( strlen(file_path)){
+        fp = fopen(file_path ,"a");
+        if (!fp) {
+            VLOG_ERR("failed to open file :%s",file_path);
+            return CMD_WARNING;
+        }
+    }
     client = vtysh_diag_connect_to_target(daemon);
     if (!client) {
         VLOG_ERR("%s transaction error.client is null ", daemon);
         vty_out(vty,"failed to connect daemon %s %s",daemon,VTY_NEWLINE);
-        return 1;
+        FCLOSE(fp);
+        return CMD_WARNING;
     }
-    char  diag_cmd_str[100];
+
     if ( !strcmp(*cmd_type,DIAG_BASIC)){
         strncpy(diag_cmd_str,DIAG_DUMP_BASIC_CMD ,  sizeof(diag_cmd_str) );
     }else{
@@ -516,9 +536,27 @@ vtysh_diag_dump_daemon( char* daemon , char **cmd_type ,
     rc = unixctl_client_transact(client, diag_cmd_str, 2 , cmd_type,
             &cmd_result, &cmd_error);
 
+   /*
+   * unixctl_client_transact() api failure case
+   *  check cmd_error and rc value.
+   */
 
-    if ( ( strlen(file_path) == 0)  && !strcmp(*cmd_type,DIAG_BASIC)) {
+
+    /* Nonzero rc failure case */
+    if (rc) {
+        VLOG_ERR("%s: transaction error:%s , rc =%d", daemon ,
+                (cmd_error?cmd_error:"error") , rc);
+        jsonrpc_close(client);
+        FREE(cmd_result);
+        FREE(cmd_error);
+        FCLOSE(fp);
+        return CMD_WARNING;
+    }
+
+   /* rc == 0 and cmd_result contains string is success   */
+    else if ( ( strlen(file_path) == 0)  && !strcmp(*cmd_type,DIAG_BASIC)) {
         /* basic ,  file not specified  =>  print on console */
+        /* print if buffer contains output*/
         if (cmd_result) {
             vty_out(vty,"Diagnostic  dump for daemon %s %s",daemon,VTY_NEWLINE);
             vty_out(vty,"%s %s",cmd_result,VTY_NEWLINE );
@@ -526,34 +564,28 @@ vtysh_diag_dump_daemon( char* daemon , char **cmd_type ,
     } else {
         /* all other case dump to file  */
         if (cmd_result) {
-            fp = fopen(file_path ,"a");
-            if (!fp) {
-                jsonrpc_close(client);
-                free(cmd_result);
-                VLOG_ERR("failed to open file :%s",file_path);
-                return 1;
-            } else {
+            if (fp) {
                 fprintf(fp,"%s\n",cmd_result);
-                fclose(fp);
             }
         }
     }
 
-    if (rc) {
-        jsonrpc_close(client);
-        VLOG_ERR("%s: transaction error:rc =%d", daemon , rc);
-    }
+    /* if cmd_error contains string then failure case */
 
     if (cmd_error) {
-        jsonrpc_close(client);
         VLOG_ERR("%s: server returned error:rc=%d,error str:%s",
                 daemon,rc,cmd_error);
+        jsonrpc_close(client);
+        FREE(cmd_result);
+        FREE(cmd_error);
+        FCLOSE(fp);
+        return CMD_WARNING;
     }
 
 
     jsonrpc_close(client);
-    free(cmd_result);
-    free(cmd_error);
-
-    return rc;
+    FREE(cmd_result);
+    FREE(cmd_error);
+    FCLOSE(fp);
+    return CMD_SUCCESS;
 }
