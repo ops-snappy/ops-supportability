@@ -29,6 +29,9 @@ void cli_post_init(void);
 
 #define SHOW_TECH_STR              "Run show tech for all supported features\n"
 #define SHOW_TECH_LIST_STR         "List all the supported show tech features\n"
+#define SHOW_TECH_FILE_STR         "Save show tech output in the given file\n"
+#define SHOW_TECH_FILE_FORCE_STR   "Overwrite if the given file exists\n"
+#define SHOW_TECH_FILENAME_STR     "Name of output file, will be saved in /tmp folder\n"
 #define SHOW_TECH_FEATURE_STR      "Run show tech for the feature specified\n"
 #define SHOW_TECH_SUB_FEATURE_STR  "Run show tech for the sub feature specified\n"
 void show_tech_vty_init();

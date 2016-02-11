@@ -67,35 +67,8 @@ static const char* keystr[MAX_NUM_KEYS] =
    "values"
 };
 
-
-
-
-/* Function        : strcmp_with_nullcheck
- * Responsibility  : Ensure arguments are not null before calling strcmp_with_nullcheck
- * Return          : 1 if arguments are null otherwise return value form strcmp_with_nullcheck
- */
-int
-strcmp_with_nullcheck( const char * str1, const char * str2 )
-{
-  if(str1 == NULL || str2 == NULL)
-    return -1;
-  return strcmp(str1,str2);
-}
-
-
-
-/* Function        : strdup_with_nullcheck
- * Responsibility  : Ensure arguments are not null before calling strdup
- * Return          : null if argument is null otherwise return value form strdump
- */
-char *
-strdup_with_nullcheck( const char * str1)
-{
-  if(str1 == NULL)
-    return NULL;
-  return strdup(str1);
-}
-
+#define SHOWTECH_CMD_PATTERN      "^\\s*show\\s+tech\\s*"
+static  regex_t showtechregx;
 
 
 /* getValueType
@@ -353,6 +326,14 @@ static struct clicmds*
 add_clicmds (struct clicmds* afternode, const char* command)
 {
   struct clicmds* element = NULL;
+
+  /* verify that the cli command "show tech" is not added here */
+  if(regexec(&showtechregx,command, 0,NULL,0) == 0)
+  {
+     /* show tech is given as the cli command, dont add it
+      * otherwise it might result in recursion */
+     return NULL;
+  }
   element = (struct clicmds*) calloc (1, sizeof(struct clicmds));
   if (element == NULL)
   {
@@ -364,6 +345,8 @@ add_clicmds (struct clicmds* afternode, const char* command)
     free(element->command);
     element->command = NULL;
   }
+
+
   element->command = strdup_with_nullcheck (command);
   if (afternode != NULL)
   {
@@ -1078,7 +1061,14 @@ get_showtech_config(const char* config_file)
 {
   if(feature_head == NULL)
   {
+    if(0 != compile_corefile_pattern(&showtechregx, SHOWTECH_CMD_PATTERN))
+    {
+       VLOG_ERR("Invalid Show Tech Regex Pattern");
+       regfree(&showtechregx);
+       return NULL;
+    }
     feature_head = parse_showtech_config(config_file);
+    regfree(&showtechregx);
   }
   return feature_head;
 }

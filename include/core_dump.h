@@ -24,7 +24,7 @@
 #ifndef _CORE_DUMP_VTY_H
 #define _CORE_DUMP_VTY_H
 
-
+#include "supportability_utils.h"
 
 
 #define GB_PATTERN \
@@ -70,11 +70,6 @@ struct core_dump_data {
    char crash_time[TIME_STR_SIZE];
 };
 
-
-char *
-trim_white_space(char *string);
-int
-compile_corefile_pattern (regex_t * regexst, const char * pattern);
 int
 extract_info (
       regex_t * regexst, const char * filename,struct core_dump_data* cd,int type);

@@ -23,9 +23,13 @@
 
 #ifndef _SHOWTECH_H_
 #define _SHOWTECH_H_
+
+#include "supportability_utils.h"
+
  struct clicmds
  {
   char* command;
+  int command_failed;
   struct clicmds* next;
 };
 
@@ -66,11 +70,5 @@ struct feature
 struct feature* get_showtech_config(const char* config_file);
 /* Frees the Show Tech Configuration Datastructure */
 void free_show_tech_config(void);
-
-/* strcmp with null check of arguments */
-int strcmp_with_nullcheck( const char * str1, const char * str2 );
-
-/* strdup with null check of arguments */
-char * strdup_with_nullcheck( const char * str1);
 
 #endif /* _SHOWTECH_H_ */

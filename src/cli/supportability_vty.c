@@ -53,6 +53,11 @@ cli_post_init()
 {
   install_element (ENABLE_NODE, &cli_platform_show_tech_cmd);
   install_element (ENABLE_NODE, &cli_platform_show_tech_list_cmd);
+  install_element (ENABLE_NODE, &cli_platform_show_tech_file_cmd);
+  install_element (ENABLE_NODE, &cli_platform_show_tech_file_force_cmd);
+  install_element (ENABLE_NODE, &cli_platform_show_tech_feature_file_cmd);
+  install_element (ENABLE_NODE,
+        &cli_platform_show_tech_feature_file_force_cmd);
   install_element (ENABLE_NODE, &cli_platform_show_tech_feature_cmd);
   install_element (ENABLE_NODE, &cli_platform_show_core_dump_cmd);
   install_element (ENABLE_NODE, &cli_platform_show_events_cmd);

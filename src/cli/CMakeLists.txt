@@ -49,6 +49,7 @@ set (SOURCES_CLI ${PROJECT_SOURCE_DIR}/show_tech_vty.c
                  ${PROJECT_SOURCE_DIR}/show_vlog_vty.c
                  ${PROJECT_SOURCE_DIR}/../featuremapping/feature_mapping.c
                  ${PROJECT_SOURCE_DIR}/supportability_vty.c
+                 ${PROJECT_SOURCE_DIR}/../supportability_utils.c
     )
 
 add_library (${LIBSUPPORTABILITYCLI} SHARED ${SOURCES_CLI})

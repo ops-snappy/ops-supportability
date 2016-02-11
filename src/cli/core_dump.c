@@ -39,58 +39,6 @@
 
 VLOG_DEFINE_THIS_MODULE (core_dump_lib);
 
-/* Helper function to trim white space around the core dump folder location */
-char *
-trim_white_space(char *string)
-{
-   char *endptr;
-   char *beginptr = string;
-
-   if(string == NULL)
-   {
-      return NULL;
-   }
-   /* Remove the white spaces at the beginning */
-   while (isspace( (unsigned char)(*beginptr)))
-   {
-      beginptr++;
-   }
-   /* if the string contains only whitespace character */
-   if(*beginptr == 0)
-   {
-      return beginptr;
-   }
-
-   /* Move the terminating null character next to the last non
-      whitespace character */
-   endptr = beginptr + strlen(beginptr) - 1;
-   while(endptr > beginptr && (isspace( (unsigned char)(*endptr))) )
-   {
-      endptr--;
-   }
-
-   /* endptr points to the last valid entry, now the next entry should be
-      terminating null character */
-   *(endptr+1) = 0;
-   return beginptr;
-}
-
-/* Helper function to compile the regex pattern */
-int
-compile_corefile_pattern (regex_t * regexst, const char * pattern)
-{
-   int status = regcomp (regexst, pattern, REG_EXTENDED|REG_NEWLINE);
-   if (status != 0)
-   {
-      char error_message[REGEX_COMP_ERR];
-      regerror (status, regexst, error_message, REGEX_COMP_ERR);
-      printf ("Error in CoreDumpPattern '%s': %s\n",
-            pattern, error_message);
-      return -1;
-   }
-   return 0;
-}
-
 /*
   Extract Code Dump information from the filename.
  */

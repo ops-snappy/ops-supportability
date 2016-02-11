@@ -1,13 +1,15 @@
 ---
-# Show Tech System Feature Definition
+# Show Tech Basic Feature Definition
   feature:
   -
-    feature_desc: "Show Tech System"
-    feature_name: system
+    feature_desc: "Show Tech Basic"
+    feature_name: basic
     cli_cmds:
       - "show version"
       - "show system"
+      - "show interface mgmt"
       - "show vlan"
+      - "show events"
 
 # Show Tech LLDP Feature Definition
   feature:

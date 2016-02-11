@@ -14,13 +14,16 @@
 #    under the License.
 #
 
-import re
+import uuid
 from opstestfw import testEnviron, LogOutput
 
 
 topoDict = {"topoExecution": 120,
             "topoDevices": "dut01",
             "topoFilters": "dut01:system-category:switch"}
+
+# Global variables
+dut01Obj = None
 
 
 def checkShowTechList(dut01Obj):
@@ -110,7 +113,7 @@ def checkShowTech(dut01Obj):
     overallBuffer.append(returnDevInt['buffer'])
     if finalReturnCode != 0:
         LogOutput('error',
-                  "Failed to run Show Tech List " +
+                  "Failed to run Show Tech" +
                   " on device " + str(dut01Obj.device))
         return False
     else:
@@ -147,8 +150,8 @@ def checkShowTechFeature(dut01Obj):
             LogOutput('info', str(curLine))
         return False
 
-    # Run Show Tech System Command
-    returnDevInt = dut01Obj.DeviceInteract(command="show tech system")
+    # Run Show Tech basic Command
+    returnDevInt = dut01Obj.DeviceInteract(command="show tech basic")
 
     # exit the vtysh shell
     returnStructure = dut01Obj.VtyshShell(enter=False)
@@ -164,7 +167,7 @@ def checkShowTechFeature(dut01Obj):
     overallBuffer.append(returnDevInt['buffer'])
     if finalReturnCode != 0:
         LogOutput('error',
-                  "Failed to run Show Tech List " +
+                  "Failed to run Show Tech Basic " +
                   " on device " + str(dut01Obj.device))
         return False
     else:
@@ -217,7 +220,7 @@ def checkShowTechSubFeature(dut01Obj):
     overallBuffer.append(returnDevInt['buffer'])
     if finalReturnCode != 0:
         LogOutput('error',
-                  "Failed to run Show Tech List " +
+                  "Failed to run Show Tech sub feature " +
                   " on device " + str(dut01Obj.device))
         return False
     else:
@@ -231,6 +234,134 @@ def checkShowTechSubFeature(dut01Obj):
         else:
             LogOutput('info',
                       " Show Tech SubFeature Ran Successfully on device " +
+                      str(dut01Obj.device))
+            return True
+
+
+def checkShowTechToFile(dut01Obj):
+    LogOutput('info', "\n############################################")
+    LogOutput('info', "1.5 Running Show tech to File ")
+    LogOutput('info', "############################################\n")
+    # Variables
+    overallBuffer = []
+    finalReturnCode = 0
+    outputfile = str(uuid.uuid4()) + ".txt"
+
+    # Get into vtyshell
+    returnStructure = dut01Obj.VtyshShell(enter=True)
+    overallBuffer.append(returnStructure.buffer())
+    returnCode = returnStructure.returnCode()
+    if returnCode != 0:
+        LogOutput('error', "Failed to get vtysh prompt")
+        for curLine in overallBuffer:
+            LogOutput('info', str(curLine))
+        return False
+
+    # Run Show Tech Command and store output to file
+    returnDevInt = dut01Obj.DeviceInteract(
+        command="show tech localfile " + outputfile)
+
+    # exit the vtysh shell
+    returnStructure = dut01Obj.VtyshShell(enter=False)
+    overallBuffer.append(returnStructure.buffer())
+    returnCode = returnStructure.returnCode()
+    if returnCode != 0:
+        LogOutput('error', "Failed to exit vtysh prompt")
+        for curLine in overallBuffer:
+            LogOutput('info', str(curLine))
+        return False
+
+    finalReturnCode = returnDevInt['returnCode']
+    overallBuffer.append(returnDevInt['buffer'])
+    if finalReturnCode != 0:
+        LogOutput('error',
+                  "Failed to run Show Tech to localfile" +
+                  " on device " + str(dut01Obj.device))
+        return False
+    else:
+        # Read the file and check the output
+        returnDevInt = dut01Obj.DeviceInteract(
+            command="cat /tmp/" + outputfile)
+        if ("Show Tech commands executed successfully"
+           not in returnDevInt['buffer']):
+            LogOutput('error',
+                      "Test Case Failure,refer output below")
+            for outputs in overallBuffer:
+                LogOutput('info', str(outputs))
+            return False
+        else:
+            LogOutput('info',
+                      " Show Tech Feature Ran Successfully on device " +
+                      str(dut01Obj.device))
+            return True
+
+
+def checkShowTechToFileForce(dut01Obj):
+    LogOutput('info', "\n############################################")
+    LogOutput('info', "1.6 Running Show tech to File, Force option ")
+    LogOutput('info', "############################################\n")
+    # Variables
+    overallBuffer = []
+    finalReturnCode = 0
+    outputfile = str(uuid.uuid4()) + ".txt"
+
+    dut01Obj.DeviceInteract(
+        command="touch /tmp/" + outputfile)
+    # Get into vtyshell
+    returnStructure = dut01Obj.VtyshShell(enter=True)
+    overallBuffer.append(returnStructure.buffer())
+    returnCode = returnStructure.returnCode()
+    if returnCode != 0:
+        LogOutput('error', "Failed to get vtysh prompt")
+        for curLine in overallBuffer:
+            LogOutput('info', str(curLine))
+        return False
+
+    # Run Show Tech Command and store output to file without force
+    returnDevInt = dut01Obj.DeviceInteract(
+        command="show tech localfile " + outputfile)
+
+    if 'already exists' not in returnDevInt['buffer']:
+        LogOutput('error', "Force option Failed")
+        LogOutput('error', returnDevInt['buffer'])
+        dut01Obj.VtyshShell(enter=False)
+        return False
+
+    # Run Show Tech Command and store output to file with force
+    returnDevInt = dut01Obj.DeviceInteract(
+        command="show tech localfile " + outputfile + " force")
+
+    # exit the vtysh shell
+    returnStructure = dut01Obj.VtyshShell(enter=False)
+    overallBuffer.append(returnStructure.buffer())
+    returnCode = returnStructure.returnCode()
+    if returnCode != 0:
+        LogOutput('error', "Failed to exit vtysh prompt")
+        for curLine in overallBuffer:
+            LogOutput('info', str(curLine))
+        return False
+
+    finalReturnCode = returnDevInt['returnCode']
+    overallBuffer.append(returnDevInt['buffer'])
+    if finalReturnCode != 0:
+        LogOutput('error',
+                  "Failed to run Show Tech to localfile with force" +
+                  " on device " + str(dut01Obj.device))
+        return False
+    else:
+        # Read the file and check the output
+        returnDevInt = dut01Obj.DeviceInteract(
+            command="cat /tmp/" + outputfile)
+        if ("Show Tech commands executed successfully"
+           not in returnDevInt['buffer']):
+            LogOutput('error',
+                      "Test Case Failure,refer output below")
+            for outputs in overallBuffer:
+                LogOutput('info', str(outputs))
+            return False
+        else:
+            LogOutput('info',
+                      " Show Tech Feature Ran Successfully on device " +
                       str(dut01Obj.device))
             return True
 
@@ -290,8 +421,8 @@ def checkInvalidCommandFailure(dut01Obj):
 
     overallBuffer.append(returnDevInt['buffer'])
 
-    if ("show tech commands failed to execute"
-                        not in returnDevInt['buffer']):
+    if ("failed to execute"
+            not in returnDevInt['buffer']):
         LogOutput('error',
                   "Test Case Failure,refer output below")
         for outputs in overallBuffer:
@@ -325,7 +456,7 @@ def checkShowTechInvalidParameters(dut01Obj):
     returnDevInt = dut01Obj.DeviceInteract(
         command="show tech lldp statistics extraparameter",
         errorCheck=False
-        )
+    )
 
     # exit the vtysh shell
     returnStructure = dut01Obj.VtyshShell(enter=False)
@@ -378,7 +509,7 @@ def checkShowTechUnSupportedFeature(dut01Obj):
     returnDevInt = dut01Obj.DeviceInteract(
         command="show tech  !@#$%^&*((QWERTYUIOPLFDSAZXCVBNM<>)(&^%$#!",
         errorCheck=False
-        )
+    )
 
     # exit the vtysh shell
     returnStructure = dut01Obj.VtyshShell(enter=False)
@@ -410,8 +541,8 @@ def checkShowTechUnSupportedSubFeature(dut01Obj):
     LogOutput('info',
               "\n#########################################################")
     LogOutput(
-      'info',
-      "2.4 Running Show tech Command with Unsupported Sub Feature Name ")
+        'info',
+        "2.4 Running Show tech Command with Unsupported Sub Feature Name ")
     LogOutput('info',
               "############################################################\n")
 
@@ -431,7 +562,7 @@ def checkShowTechUnSupportedSubFeature(dut01Obj):
     returnDevInt = dut01Obj.DeviceInteract(
         command="show tech lldp !@#$%^&*((QWERTYUIOPLFDSAZXCVBNM<>)(&^%$#!",
         errorCheck=False
-        )
+    )
 
     # exit the vtysh shell
     returnStructure = dut01Obj.VtyshShell(enter=False)
@@ -445,7 +576,8 @@ def checkShowTechUnSupportedSubFeature(dut01Obj):
 
     overallBuffer.append(returnDevInt['buffer'])
     if (
-      "Sub Feature !@#$%^&*((QWERTYUIOPLFDSAZXCVBNM<>)(&^%$#! is not supported"
+        "Sub Feature !@#$%^&*((QWERTYUIOPLFDSAZXCVBNM<>)"
+        "(&^%$#! is not supported"
        not in returnDevInt['buffer']):
         LogOutput('error',
                   "Test Case Failure,refer output below")
@@ -464,8 +596,8 @@ def checkShowTechUnSupportedFeatureAndSubFeature(dut01Obj):
     LogOutput('info',
               "\n#########################################################")
     LogOutput(
-      'info',
-      "2.5 Running Show tech Command with Unsupported Feature and \
+        'info',
+        "2.5 Running Show tech Command with Unsupported Feature and \
       Sub Feature Name ")
     LogOutput('info',
               "############################################################\n")
@@ -486,7 +618,7 @@ def checkShowTechUnSupportedFeatureAndSubFeature(dut01Obj):
     returnDevInt = dut01Obj.DeviceInteract(
         command="show tech !@#$%^&*^%$#! !@#$%^&*^%$#!",
         errorCheck=False
-        )
+    )
 
     # exit the vtysh shell
     returnStructure = dut01Obj.VtyshShell(enter=False)
@@ -500,7 +632,7 @@ def checkShowTechUnSupportedFeatureAndSubFeature(dut01Obj):
 
     overallBuffer.append(returnDevInt['buffer'])
     if (
-      "Sub Feature !@#$%^&*^%$#! is not supported"
+        "Sub Feature !@#$%^&*^%$#! is not supported"
        not in returnDevInt['buffer']):
         LogOutput('error',
                   "Test Case Failure,refer output below")
@@ -605,7 +737,7 @@ def TestShowTechConfigDuplicateEntries(dut01Obj):
     dut01Obj.DeviceInteract(command=command)
 
     dut01Obj.VtyshShell(enter=True)
-    returnDevInt = dut01Obj.DeviceInteract(command="show tech system")
+    returnDevInt = dut01Obj.DeviceInteract(command="show tech basic")
 
     dut01Obj.VtyshShell(enter=False)
     dut01Obj.DeviceInteract(command="mv \
@@ -624,9 +756,6 @@ def TestShowTechConfigDuplicateEntries(dut01Obj):
 
 
 class Test_showtech:
-
-    # Global variables
-    dut01Obj = None
 
     def setup_class(cls):
         # Create Topology object and connect to devices
@@ -648,33 +777,48 @@ class Test_showtech:
     def test_show_tech_feature(self):
         assert(checkShowTechFeature(dut01Obj))
 
-    #def test_show_tech_subfeature(self):
+    # def test_show_tech_subfeature(self):
     #    assert(checkShowTechSubFeature(dut01Obj))
+
+    def test_show_tech_to_file(self):
+        global dut01Obj
+        assert(checkShowTechToFile(dut01Obj))
+
+    def test_show_tech_to_file_force(self):
+        global dut01Obj
+        assert(checkShowTechToFileForce(dut01Obj))
 
     # Failure Test Cases
     def test_invalid_command_failure(self):
+        global dut01Obj
         assert(checkInvalidCommandFailure(dut01Obj))
 
     def test_invalid_parameter_failure(self):
+        global dut01Obj
         assert(checkShowTechInvalidParameters(dut01Obj))
 
     def test_unsupported_feature(self):
+        global dut01Obj
         assert(checkShowTechUnSupportedFeature(dut01Obj))
 
-    #def test_unsupported_subfeature(self):
+    # def test_unsupported_subfeature(self):
+    #   global dut01Obj
     #    assert(checkShowTechUnSupportedSubFeature(dut01Obj))
 
-    #def test_unsupported_feature_and_subfeature(self):
+    # def test_unsupported_feature_and_subfeature(self):
     #    assert(checkShowTechUnSupportedFeatureAndSubFeature(dut01Obj))
 
     # Destructive Test Cases
     def test_show_tech_no_config(self):
+        global dut01Obj
         assert(TestNoShowTechConfigfile(dut01Obj))
 
     def test_show_tech_corrupted_config(self):
+        global dut01Obj
         assert(TestShowTechCorruptedConfigFile(dut01Obj))
 
     def test_show_tech_config_with_duplicate_entries(self):
+        global dut01Obj
         assert(TestShowTechConfigDuplicateEntries(dut01Obj))
 
     # Teardown Class
