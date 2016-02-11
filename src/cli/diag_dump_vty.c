@@ -27,24 +27,22 @@
 
 #include <stdio.h>
 #include <yaml.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
 #include "openvswitch/vlog.h"
 #include "diag_dump_vty.h"
 #include "jsonrpc.h"
 
 #define ARGC 2
-#define FREE(X)\
-        if(X) { free (X); X = NULL; }
-
-#define FCLOSE(X)\
-        if(X) { fclose(X); X = NULL; }
-
 
 VLOG_DEFINE_THIS_MODULE(vtysh_diag);
 
 
 static int
 vtysh_diag_dump_daemon( char* daemon , char **cmd_type ,
-        int cmd_argc , struct vty *vty , char* file_path );
+        int cmd_argc , struct vty *vty , int fd );
 
 static struct jsonrpc *
 vtysh_diag_connect_to_target(const char *target);
@@ -70,6 +68,8 @@ static struct feature*
 vtysh_diag_add_feature(struct feature* afternode,
         const char* feature_name);
 
+
+static int vtysh_diag_check_crete_dir( char *dir);
 
 const char* keystr[MAX_NUM_KEYS] = {
     "values",
@@ -149,12 +149,19 @@ vtysh_diag_add_feature_desc(struct feature* element,
 static void
 vtysh_diag_list_features (struct feature* head ,  struct vty *vty)
 {
+#define STR_FORMAT "%-40.40s %-100.100s %s"
     struct feature* iter = head;
     vty_out(vty,"Diagnostic Dump Supported Features List%s",VTY_NEWLINE);
+    vty_out(vty,"%s%s",CLI_STR_HYPHEN,VTY_NEWLINE);
+    vty_out(vty,STR_FORMAT,"Feature","Description",VTY_NEWLINE);
+    vty_out(vty,"%s%s",CLI_STR_HYPHEN,VTY_NEWLINE);
     while(iter != NULL) {
-        vty_out(vty,"%s\t\t\t%s %s",iter->name,iter->desc ,VTY_NEWLINE);
+        vty_out(vty,STR_FORMAT,STR_NULL_CHK(iter->name),
+                STR_NULL_CHK(iter->desc) ,VTY_NEWLINE);
         iter = iter->next;
     }
+
+#undef  STR_FORMAT
 }
 
 /*
@@ -199,7 +206,7 @@ vtysh_diag_check_key(const char *data)
 {
     int i = FEATURE_NAME;
     for( i = FEATURE_NAME; i < MAX_NUM_KEYS; i++) {
-        if(!strcmp(keystr[i],data)) {
+        if(!strcmp_with_nullcheck(keystr[i],data)) {
             return i;
         }
     }
@@ -330,6 +337,101 @@ vtysh_diag_parse_diag_yml(void)
 }
 
 
+/*
+ * Function       : vtysh_diag_check_crete_dir
+ * Responsibility : checks a directory ,
+ *                  creates directory if directory is not present
+ *
+ * Parameters     : void
+ * Returns        : 0 on sucess and nonzero on failure
+ */
+
+static int
+vtysh_diag_check_crete_dir( char *dir)
+{
+    struct stat sb;
+    int rc= 1;
+    if (!dir){
+        VLOG_ERR("invalid parameter dir");
+        return 1;
+    }
+
+    rc =  stat(dir, &sb);
+
+
+    if ( rc == 0 ) {
+        /* dir already present*/
+        if (S_ISDIR(sb.st_mode)) {
+            return 0;
+        }
+        /* file already present, delete the file and create dir*/
+        else if (S_ISREG(sb.st_mode)) {
+            rc = unlink(dir );
+            if (rc) {
+                VLOG_ERR("unlink failed for %s",dir);
+                return 1;
+            }
+            rc = mkdir (dir,DEFFILEMODE);
+            return rc;
+        }
+        else {
+            /* for all other case return error */
+            return 1;
+        }
+    }
+    else{
+        if ( rc == -1){
+            if (ENOENT == errno) {
+                rc = mkdir (dir,DEFFILEMODE);
+                return rc;
+            }
+        }
+
+    }
+
+    return  rc;
+}
+
+
+
+/*
+ * Function       : vty_diag_print_time
+ * Responsibility : print current time to given string
+ *
+ * Parameters     : string and length of string
+ * Returns        : 0 on sucess and nonzero on failure
+ */
+
+static int
+vty_diag_print_time(char *time_str, unsigned  int size)
+{
+    time_t rawtime;
+    char buf[MAX_TIME_STR_LEN] = {0};
+    struct tm * timeinfo = NULL;
+    char * asci_time = NULL;
+    struct tm result;
+
+    if (!time_str)
+        return 1;
+
+    if (!size)
+        return 1;
+
+    time(&rawtime);
+    timeinfo = localtime_r(&rawtime,&result);
+    if  (!timeinfo)
+        return 1;
+
+    asci_time=asctime_r(timeinfo,buf) ;
+    if (!asci_time)
+        return 1;
+
+    snprintf(time_str,size,"Time : %s",asci_time);
+    time_str[size-1]='\0';
+    return 0;
+}
+
+
 DEFUN (vtysh_diag_dump_list_show,
         vtysh_diag_dump_list_cmd,
         "diag-dump list",
@@ -344,7 +446,7 @@ DEFUN (vtysh_diag_dump_list_show,
         if ( rc != 0 ) {
             vty_out(vty,"Fail to parse diagnostic yaml file. Check yaml file %s"
                     , VTY_NEWLINE);
-            return  rc ;
+            return  CMD_WARNING ;
         }
     }
     vtysh_diag_list_features(feature_head,vty);
@@ -360,14 +462,28 @@ DEFUN (vtysh_diag_dump_show,
         DIAG_DUMP_FEATURE_FILE
       )
 {
+
+#define  FEATURE_BEGIN\
+            snprintf(write_buff,sizeof(write_buff),"%s\n",CLI_STR_EQUAL);\
+            STR_SAFE(write_buff); \
+            write(fd,write_buff,strlen(write_buff));
+
+#define  FEATURE_END FEATURE_BEGIN
+
+
     int fun_argc=ARGC;
-    char file_path[FILE_PATH_LEN_MAX]="";
-    char *fun_argv[ARGC];
     struct feature* iter = feature_head;
     struct daemon* iter_daemon = NULL;
     unsigned int  daemon_count=0;
     unsigned int  daemon_resp =0;
     int rc = 0;
+    int fd = -1;
+    char  file_path[FILE_PATH_LEN_MAX] = {0};
+    char *fun_argv[ARGC];
+    char time_str[MAX_TIME_STR_LEN]={0};
+    char write_buff[MAX_CLI_STR_LEN]={0};
+    char err_buf[MAX_CLI_STR_LEN];
+
 
     fun_argv[1] = (char *)  argv[0];
     fun_argv[0] = DIAG_BASIC;
@@ -377,40 +493,131 @@ DEFUN (vtysh_diag_dump_show,
         if ( rc != 0 ) {
             vty_out(vty,"Fail to parse diagnostic yaml file. Check yaml file %s"
                     , VTY_NEWLINE);
-            return  rc ;
+            return  CMD_WARNING ;
         }
     }
 
+    /* user provided filepath */
+    if (argc >= 2){
+        rc = vtysh_diag_check_crete_dir(DIAG_DUMP_DIR);
+        if (rc) {
+            vty_out (vty,"failed to check or create dir:%s%s",
+                    DIAG_DUMP_DIR,VTY_NEWLINE);
+            return CMD_WARNING;
+        }
+
+        if ( argv[1][0] == '/') {
+            vty_out (vty,"please provide filename without /%s",VTY_NEWLINE);
+            return CMD_WARNING;
+        }
+
+        if ( strlen(argv[1]) > USER_FILE_LEN_MAX ) {
+            vty_out (vty,"please provide filename less than %d %s",
+                    USER_FILE_LEN_MAX ,VTY_NEWLINE);
+            return CMD_WARNING;
+        }
+
+        snprintf(file_path,sizeof(file_path),"%s/%s",DIAG_DUMP_DIR,argv[1]);
+        STR_SAFE(file_path);
+
+        fd = open (file_path, O_CREAT|O_EXCL|O_WRONLY);
+        if ( !VALID_FD_CHECK (fd) ) {
+            strerror_r (errno,err_buf,sizeof(err_buf));
+            STR_SAFE(err_buf);
+
+
+            VLOG_ERR("failed to open file error:%d,file:%s", errno, file_path);
+            vty_out (vty, "failed to open file error:%s file:%s%s",
+                     err_buf , file_path,VTY_NEWLINE);
+            return CMD_WARNING;
+        }
+    }
 
     /* traverse linkedlist to find node */
-    for (iter=feature_head ;   iter && strcmp(iter->name,argv[0]) ;
+    for (iter=feature_head ; iter && strcmp_with_nullcheck(iter->name,argv[0]);
             iter = iter->next);
-    if (iter) {
-        if (argc >= 2)
-            strncpy(file_path,argv[1],sizeof(file_path));
 
-        VLOG_DBG("feature:%s , desc:%s",iter->name,iter->desc);
+    if (iter) {
+
+        /* print header */
+        rc = vty_diag_print_time(time_str,sizeof(time_str));
+        if (rc) {
+            strncpy (time_str,"",sizeof(time_str) );
+            STR_SAFE(time_str);
+        }
+
+        if (VALID_FD_CHECK(fd)) {
+            /*   print ==== line */
+            FEATURE_BEGIN
+
+            /* print time in header . time_str contains \n */
+            snprintf(write_buff,sizeof(write_buff),"[Start] Feature %s %s",
+                    argv[0], time_str);
+            STR_SAFE(write_buff);
+            write(fd,write_buff,strlen(write_buff));
+
+            /*   print ==== line */
+            FEATURE_BEGIN
+
+        } else {
+
+            vty_out ( vty,"%s%s", CLI_STR_EQUAL , VTY_NEWLINE );
+            vty_out ( vty,"[Start] Feature %s %s %s",argv[0], time_str,
+                    VTY_NEWLINE);
+            vty_out ( vty,"%s%s", CLI_STR_EQUAL , VTY_NEWLINE );
+        }
+
+        VLOG_DBG("feature:%s , desc:%s",STR_NULL_CHK(iter->name),
+                STR_NULL_CHK(iter->desc));
         iter_daemon = iter->p_daemon;
         while(iter_daemon) {
             daemon_count++;
             rc = vtysh_diag_dump_daemon(iter_daemon->name, fun_argv, fun_argc,
-                    vty,file_path);
+                    vty, fd );
+            /*Count daemon responded */
             if (!rc) {
                 VLOG_DBG("daemon :%s , rc:%d",iter_daemon->name,rc);
                 daemon_resp++;
             }
             iter_daemon = iter_daemon->next;
         }
+
+
+        if ( VALID_FD_CHECK (fd)) {
+            /* print ===== */
+            FEATURE_END
+
+            snprintf(write_buff,sizeof(write_buff),
+                    "[End] Feature %s\n",argv[0]);
+            STR_SAFE(write_buff);
+            write(fd,write_buff,strlen(write_buff));
+
+            /* print ===== */
+            FEATURE_END
+        } else {
+            vty_out ( vty,"%s%s",CLI_STR_EQUAL, VTY_NEWLINE );
+            vty_out (vty, "[End] Feature %s %s",argv[0],VTY_NEWLINE);
+            vty_out ( vty,"%s%s",CLI_STR_EQUAL, VTY_NEWLINE );
+        }
+
     } else {
         VLOG_ERR("%s feature is not present",argv[0]);
         vty_out(vty,"%s feature is not present %s",argv[0], VTY_NEWLINE);
+        CLOSE(fd);
         return CMD_WARNING;
     }
+
+
     if ( daemon_count  ==  daemon_resp ) {
         vty_out(vty,"Diagnostic dump captured for feature %s %s",
                 argv[0],VTY_NEWLINE);
     }
+
+    CLOSE(fd);
     return CMD_SUCCESS;
+
+#undef FEATURE_BEGIN
+#undef FEATURE_END
 }
 
 /*
@@ -478,6 +685,8 @@ vtysh_diag_connect_to_target(const char *target)
     error = unixctl_client_create(socket_name, &client);
     if (error) {
         VLOG_ERR("cannot connect to %s,error=%d", socket_name,error);
+        free(socket_name);
+        return NULL;
     }
     free(socket_name);
 
@@ -493,47 +702,51 @@ vtysh_diag_connect_to_target(const char *target)
  *                : cmd_type - basic  or advanced
  *                : cmd_argc
  *                : vty
- *                : file_path - path of file to capture diagnostic information
+ *                : fd - file descriptor
+ *                  prints on vtysh if fd is NULL
+ *                  writes to file if  fd is valid
  * Returns        : 0 on sucess and nonzero on failure
  */
 
 static int
 vtysh_diag_dump_daemon( char* daemon , char **cmd_type ,
-        int cmd_argc , struct vty *vty , char* file_path )
+        int cmd_argc , struct vty *vty , int fd)
 {
+#define  FEATURE_BEGIN\
+            snprintf(write_buff,sizeof(write_buff),"%s\n",CLI_STR_HYPHEN);\
+            STR_SAFE(write_buff);\
+            write(fd,write_buff,strlen(write_buff));
+
+#define  FEATURE_END FEATURE_BEGIN
+
+
+    char write_buff[MAX_CLI_STR_LEN]={0};
     struct jsonrpc *client=NULL;
     char *cmd_result=NULL, *cmd_error=NULL;
     int rc=0;
-    FILE *fp=NULL;
-    char  diag_cmd_str[100];
+    char  diag_cmd_str[DIAG_CMD_LEN_MAX] = {0};
 
     if  (!(daemon && cmd_type)) {
         VLOG_ERR("invalid parameter daemon or command ");
         return CMD_WARNING;
     }
-    /* user specified file path then open a file to write it */
-    if ( strlen(file_path)){
-        fp = fopen(file_path ,"a");
-        if (!fp) {
-            VLOG_ERR("failed to open file :%s",file_path);
-            return CMD_WARNING;
-        }
-    }
+
     client = vtysh_diag_connect_to_target(daemon);
     if (!client) {
         VLOG_ERR("%s transaction error.client is null ", daemon);
         vty_out(vty,"failed to connect daemon %s %s",daemon,VTY_NEWLINE);
-        FCLOSE(fp);
         return CMD_WARNING;
     }
 
-    if ( !strcmp(*cmd_type,DIAG_BASIC)){
+
+    if ( !strcmp_with_nullcheck(*cmd_type,DIAG_BASIC)){
         strncpy(diag_cmd_str,DIAG_DUMP_BASIC_CMD ,  sizeof(diag_cmd_str) );
     }else{
         strncpy(diag_cmd_str,DIAG_DUMP_ADVANCED_CMD,sizeof(diag_cmd_str));
     }
+    STR_SAFE(diag_cmd_str);
 
-    rc = unixctl_client_transact(client, diag_cmd_str, 2 , cmd_type,
+    rc = unixctl_client_transact(client, diag_cmd_str, cmd_argc , cmd_type,
             &cmd_result, &cmd_error);
 
    /*
@@ -545,27 +758,61 @@ vtysh_diag_dump_daemon( char* daemon , char **cmd_type ,
     /* Nonzero rc failure case */
     if (rc) {
         VLOG_ERR("%s: transaction error:%s , rc =%d", daemon ,
-                (cmd_error?cmd_error:"error") , rc);
+                STR_NULL_CHK(cmd_error)  , rc);
         jsonrpc_close(client);
         FREE(cmd_result);
         FREE(cmd_error);
-        FCLOSE(fp);
         return CMD_WARNING;
     }
 
    /* rc == 0 and cmd_result contains string is success   */
-    else if ( ( strlen(file_path) == 0)  && !strcmp(*cmd_type,DIAG_BASIC)) {
+    else if ( !VALID_FD_CHECK(fd)  && !strcmp_with_nullcheck(*cmd_type,DIAG_BASIC)) {
         /* basic ,  file not specified  =>  print on console */
         /* print if buffer contains output*/
         if (cmd_result) {
-            vty_out(vty,"Diagnostic  dump for daemon %s %s",daemon,VTY_NEWLINE);
-            vty_out(vty,"%s %s",cmd_result,VTY_NEWLINE );
+            vty_out ( vty,"%s%s",CLI_STR_HYPHEN, VTY_NEWLINE );
+            vty_out (vty, "[Start] Daemon %s %s",daemon,VTY_NEWLINE);
+            vty_out ( vty,"%s%s",CLI_STR_HYPHEN, VTY_NEWLINE );
+
+            vty_out (vty,"%s %s",cmd_result,VTY_NEWLINE );
+
+            vty_out ( vty,"%s%s",CLI_STR_HYPHEN, VTY_NEWLINE );
+            vty_out (vty, "[End] Daemon %s %s",daemon,VTY_NEWLINE);
+            vty_out ( vty,"%s%s",CLI_STR_HYPHEN, VTY_NEWLINE );
+
         }
     } else {
         /* all other case dump to file  */
-        if (cmd_result) {
-            if (fp) {
-                fprintf(fp,"%s\n",cmd_result);
+        if ( VALID_FD_CHECK(fd) && !strcmp_with_nullcheck(*cmd_type,DIAG_BASIC)) {
+            if ( cmd_result ) {
+
+                /* print ------- */
+                FEATURE_BEGIN
+
+                snprintf(write_buff,sizeof(write_buff),
+                        "[Start] Daemon %s\n",daemon);
+                STR_SAFE(write_buff);
+                write(fd,write_buff,strlen(write_buff));
+
+
+                /* print ------- */
+                FEATURE_BEGIN
+
+                write(fd,cmd_result ,strlen(cmd_result));
+                write(fd,"\n", 2);
+
+
+                /* print ------- */
+                FEATURE_END
+
+                snprintf(write_buff,sizeof(write_buff),
+                        "[End] Daemon %s\n",daemon );
+                STR_SAFE(write_buff);
+                write(fd,write_buff,strlen(write_buff));
+
+
+                /* print ------- */
+                FEATURE_END
             }
         }
     }
@@ -578,7 +825,6 @@ vtysh_diag_dump_daemon( char* daemon , char **cmd_type ,
         jsonrpc_close(client);
         FREE(cmd_result);
         FREE(cmd_error);
-        FCLOSE(fp);
         return CMD_WARNING;
     }
 
@@ -586,6 +832,8 @@ vtysh_diag_dump_daemon( char* daemon , char **cmd_type ,
     jsonrpc_close(client);
     FREE(cmd_result);
     FREE(cmd_error);
-    FCLOSE(fp);
     return CMD_SUCCESS;
+
+#undef  FEATURE_BEGIN
+#undef  FEATURE_END
 }

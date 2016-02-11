@@ -32,7 +32,12 @@
 #include "diag_dump.h"
 
 #define DIAG_DUMP_CONF        "/etc/openswitch/supportability/ops_diagdump.yaml"
+#define DIAG_DUMP_DIR         "/tmp/ops-diag"
 #define FILE_PATH_LEN_MAX          256
+#define MAX_TIME_STR_LEN           256
+#define MAX_CLI_STR_LEN            256
+#define USER_FILE_LEN_MAX          50
+#define DIAG_CMD_LEN_MAX           50
 
 
 #define DIAG_DUMP_STR              "Show diagnostic information\n"
@@ -40,7 +45,7 @@
 
 #define DIAG_DUMP_FEATURE          "Feature name  \n"
 #define DIAG_DUMP_FEATURE_BASIC    "Basic information \n"
-#define DIAG_DUMP_FEATURE_FILE     "Absolute path of file\n"
+#define DIAG_DUMP_FEATURE_FILE     "Relative path of file\n"
 
 
 
@@ -64,5 +69,30 @@ enum  {
    DAEMON,
    MAX_NUM_KEYS
 } ;
+
+
+#define FREE(X)\
+        if(X) { free (X); X = NULL; }
+
+#define CLOSE(X)\
+        if(X > 0)  { close(X); X = -1; }
+
+#define STR_NULL_CHK(X)\
+        (X)?(X):"NULL"
+
+#define VALID_FD_CHECK(X)\
+        ( ( (X) < 0) ? 0 : 1 )
+
+#define  STR_SAFE(X)\
+        if (sizeof(X) >=  1 )   X[ sizeof(X) - 1 ] =  '\0' ;
+
+#define CLI_STR_EQUAL \
+                    "==========================================================\
+==============="
+#define CLI_STR_HYPHEN \
+                    "----------------------------------------------------------\
+---------------"
+
+int strcmp_with_nullcheck( const char * str1, const char * str2 );
 
 #endif /* __DIAG_DUMP_VTY_H */
