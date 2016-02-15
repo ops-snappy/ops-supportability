@@ -4,12 +4,12 @@ categories:
 #   category_rank: xx
 - event_category: LLDP
   description: 'Events related to LLDP'
-  category_rank: 01
+  category_rank: 1
 
 event_definitions:
 #- event_name: XYZ_UP
 #  event_category: ABC
-#  event_ID : xx001
+#  event_ID : xxx001
 #  severity: LOG_INFO
 #  keys: key
 #  event_description_template:
@@ -17,7 +17,7 @@ event_definitions:
 
 - event_name: LLDP_ENABLED
   event_category: LLDP
-  event_ID : 01001
+  event_ID : 1001
   severity: LOG_INFO
   keys: NA
   event_description_template:
@@ -25,7 +25,7 @@ event_definitions:
 
 - event_name: LLDP_DISABLED
   event_category: LLDP
-  event_ID : 01002
+  event_ID : 1002
   severity: LOG_INFO
   keys: NA
   event_description_template:
@@ -33,7 +33,7 @@ event_definitions:
 
 - event_name: LLDP_TX_TIMER
   event_category: LLDP
-  event_ID : 01003
+  event_ID : 1003
   severity: LOG_INFO
   keys: value
   event_description_template:
@@ -41,7 +41,7 @@ event_definitions:
 
 - event_name: LLDP_NEIGHBOUR_ADD
   event_category: LLDP
-  event_ID : 01004
+  event_ID : 1004
   severity: LOG_INFO
   keys: interface
   event_description_template:
@@ -49,7 +49,7 @@ event_definitions:
 
 - event_name: LLDP_NEIGHBOUR_UPDATE
   event_category: LLDP
-  event_ID : 01005
+  event_ID : 1005
   severity: LOG_INFO
   keys: interface
   event_description_template:
@@ -57,7 +57,7 @@ event_definitions:
 
 - event_name: LLDP_NEIGHBOUR_DELETE
   event_category: LLDP
-  event_ID : 01006
+  event_ID : 1006
   severity: LOG_INFO
   keys: interface
   event_description_template:
@@ -65,7 +65,7 @@ event_definitions:
 
 - event_name: MGMT_PATTERN
   event_category: LLDP
-  event_ID : 01007
+  event_ID : 1007
   severity: LOG_INFO
   keys: value
   event_description_template:
@@ -73,7 +73,7 @@ event_definitions:
 
 - event_name: LLDP_TX_HOLD
   event_category: LLDP
-  event_ID : 01008
+  event_ID : 1008
   severity: LOG_INFO
   keys: hold
   event_description_template:

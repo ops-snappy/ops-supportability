@@ -17,5 +17,5 @@ from setuptools import setup
 setup(
     name='ops_supportability',
     version='1.0',
-    py_modules=['ops_diagdump']
+    py_modules=['ops_diagdump', 'ops_eventlog']
 )
