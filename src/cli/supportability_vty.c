@@ -54,6 +54,7 @@ cli_post_init()
   install_element (ENABLE_NODE, &cli_platform_show_tech_cmd);
   install_element (ENABLE_NODE, &cli_platform_show_tech_list_cmd);
   install_element (ENABLE_NODE, &cli_platform_show_tech_feature_cmd);
+  install_element (ENABLE_NODE, &cli_platform_show_core_dump_cmd);
   install_element (ENABLE_NODE, &cli_platform_show_events_cmd);
   install_element (ENABLE_NODE, &vtysh_diag_dump_cmd);
   install_element (ENABLE_NODE, &vtysh_diag_dump_list_cmd);

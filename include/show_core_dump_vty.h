@@ -1,5 +1,5 @@
-
-/* Supportability Command Declaration file
+/* SHOW_CORE_DUMP CLI commands.
+ *
  * Copyright (C) 2016 Hewlett Packard Enterprise Development LP
  *
  * This program is free software; you can redistribute it and/or
@@ -16,22 +16,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * File: supportability_vty.h
+ * File: show_core_dump_vty.h
  *
- * Purpose: header file for supportability command structs
+ * Purpose: To Run Show Core Dump command from CLI.
  */
 
-#ifndef _SUPPORTABILITY_VTY_H_
+#ifndef _SHOW_CORE_DUMP_VTY_H
+#define _SHOW_CORE_DUMP_VTY_H
 
-#define _SUPPORTABILITY_VTY_H_
+#include "core_dump.h"
 
-extern struct cmd_element vtysh_diag_dump_list_cmd;
-extern struct cmd_element vtysh_diag_dump_cmd;
-extern struct cmd_element cli_platform_show_tech_cmd;
-extern struct cmd_element cli_platform_show_tech_list_cmd;
-extern struct cmd_element cli_platform_show_tech_feature_cmd;
-extern struct cmd_element cli_platform_show_events_cmd;
-extern struct cmd_element cli_platform_show_core_dump_cmd;
+#define SHOW_CORE_DUMP_STR              "Show list of core dumps present in the switch\n"
 
 
-#endif /* _SUPPORTABILITY_VTY_H_ */
+#endif //_SHOW_CORE_DUMP_VTY_H
