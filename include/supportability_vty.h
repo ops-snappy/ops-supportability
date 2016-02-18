@@ -32,6 +32,8 @@ extern struct cmd_element cli_platform_show_tech_list_cmd;
 extern struct cmd_element cli_platform_show_tech_feature_cmd;
 extern struct cmd_element cli_platform_show_events_cmd;
 extern struct cmd_element cli_platform_show_core_dump_cmd;
-
-
+extern struct cmd_element cli_platform_show_vlog_config_cmd;
+extern struct cmd_element cli_platform_show_vlog_config_list_cmd;
+extern struct cmd_element cli_platform_show_vlog_feature_cmd;
+extern struct cmd_element cli_config_vlog_set_cmd;
 #endif /* _SUPPORTABILITY_VTY_H_ */
