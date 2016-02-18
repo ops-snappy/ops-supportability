@@ -376,6 +376,7 @@ vtysh_diag_check_crete_dir( char *dir)
         }
         else {
             /* for all other case return error */
+            VLOG_ERR("%s not a regular file or dir  ",dir);
             return 1;
         }
     }
@@ -497,47 +498,50 @@ DEFUN (vtysh_diag_dump_show,
         }
     }
 
-    /* user provided filepath */
-    if (argc >= 2){
-        rc = vtysh_diag_check_crete_dir(DIAG_DUMP_DIR);
-        if (rc) {
-            vty_out (vty,"failed to check or create dir:%s%s",
-                    DIAG_DUMP_DIR,VTY_NEWLINE);
-            return CMD_WARNING;
-        }
 
-        if ( argv[1][0] == '/') {
-            vty_out (vty,"please provide filename without /%s",VTY_NEWLINE);
-            return CMD_WARNING;
-        }
-
-        if ( strlen(argv[1]) > USER_FILE_LEN_MAX ) {
-            vty_out (vty,"please provide filename less than %d %s",
-                    USER_FILE_LEN_MAX ,VTY_NEWLINE);
-            return CMD_WARNING;
-        }
-
-        snprintf(file_path,sizeof(file_path),"%s/%s",DIAG_DUMP_DIR,argv[1]);
-        STR_SAFE(file_path);
-
-        fd = open (file_path, O_CREAT|O_EXCL|O_WRONLY);
-        if ( !VALID_FD_CHECK (fd) ) {
-            strerror_r (errno,err_buf,sizeof(err_buf));
-            STR_SAFE(err_buf);
-
-
-            VLOG_ERR("failed to open file error:%d,file:%s", errno, file_path);
-            vty_out (vty, "failed to open file error:%s file:%s%s",
-                     err_buf , file_path,VTY_NEWLINE);
-            return CMD_WARNING;
-        }
-    }
 
     /* traverse linkedlist to find node */
     for (iter=feature_head ; iter && strcmp_with_nullcheck(iter->name,argv[0]);
             iter = iter->next);
 
     if (iter) {
+
+        /* user provided filepath */
+        if (argc >= 2){
+            rc = vtysh_diag_check_crete_dir(DIAG_DUMP_DIR);
+            if (rc) {
+                vty_out (vty,"failed to check or create dir:%s%s",
+                        DIAG_DUMP_DIR,VTY_NEWLINE);
+                return CMD_WARNING;
+            }
+
+            if ( argv[1][0] == '/') {
+                vty_out (vty,"please provide filename without /%s",VTY_NEWLINE);
+                return CMD_WARNING;
+            }
+
+            if ( strlen(argv[1]) > USER_FILE_LEN_MAX ) {
+                vty_out (vty,"please provide filename less than %d %s",
+                        USER_FILE_LEN_MAX ,VTY_NEWLINE);
+                return CMD_WARNING;
+            }
+
+            snprintf(file_path,sizeof(file_path),"%s/%s",DIAG_DUMP_DIR,argv[1]);
+            STR_SAFE(file_path);
+
+            fd = open (file_path, O_CREAT|O_EXCL|O_WRONLY);
+            if ( !VALID_FD_CHECK (fd) ) {
+                strerror_r (errno,err_buf,sizeof(err_buf));
+                STR_SAFE(err_buf);
+
+
+                VLOG_ERR("failed to open file error:%d,file:%s", errno, file_path);
+                vty_out (vty, "failed to open file error:%s file:%s%s",
+                        err_buf , file_path,VTY_NEWLINE);
+                return CMD_WARNING;
+            }
+        }
+
 
         /* print header */
         rc = vty_diag_print_time(time_str,sizeof(time_str));
