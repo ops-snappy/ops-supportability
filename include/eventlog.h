@@ -46,10 +46,12 @@
 #define MAX_EVENT_TABLE_SIZE 500
 #define EVENT_NAME_DELIMITER_STR "EV_TBD_TBD"
 #define EVENT_YAML_FILE "/etc/openswitch/supportability/ops_events.yaml"
+#define MAX_SEV_LEVELS 8
 #define EV_KV(...) key_value_string(__VA_ARGS__)
 
 
 typedef struct {
+    char *category;
     int event_id;
     char event_name[MAX_EVENT_NAME_SIZE];
     char severity[MAX_SEV_NAME_SIZE];
