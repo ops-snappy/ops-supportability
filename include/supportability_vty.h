@@ -64,4 +64,27 @@ extern struct cmd_element cli_platform_show_vlog_cmd;
 extern struct cmd_element cli_platform_show_vlog_config_list_cmd;
 extern struct cmd_element cli_platform_show_vlog_feature_cmd;
 extern struct cmd_element cli_config_vlog_set_cmd;
+
+
+/* Syslog Command */
+
+extern struct cmd_element vtysh_config_syslog_basic_cmd;
+extern struct cmd_element vtysh_config_syslog_udp_cmd;
+extern struct cmd_element vtysh_config_syslog_tcp_cmd;
+extern struct cmd_element vtysh_config_syslog_svrt_cmd;
+extern struct cmd_element vtysh_config_syslog_udp_svrt_cmd;
+extern struct cmd_element vtysh_config_syslog_tcp_svrt_cmd;
+extern struct cmd_element vtysh_config_syslog_prot_svrt_noport_cmd;
+
+
+extern struct cmd_element no_vtysh_config_syslog_basic_cmd;
+extern struct cmd_element no_vtysh_config_syslog_udp_cmd;
+extern struct cmd_element no_vtysh_config_syslog_tcp_cmd;
+extern struct cmd_element no_vtysh_config_syslog_svrt_cmd;
+extern struct cmd_element no_vtysh_config_syslog_udp_svrt_cmd;
+extern struct cmd_element no_vtysh_config_syslog_tcp_svrt_cmd;
+extern struct cmd_element no_vtysh_config_syslog_prot_svrt_noport_cmd;
+extern struct cmd_element vtysh_config_no_syslog_cmd;
+
+extern void syslog_ovsdb_init(void);
 #endif /* _SUPPORTABILITY_VTY_H_ */
