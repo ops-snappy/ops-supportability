@@ -26,12 +26,23 @@
 
 
 #define SHOW_EVENTS_STR              "Display event logs\n"
+#define SHOW_EVENTS_FILTER_EV_ID     "Filter based on event ID\n"
+#define SHOW_EVENTS_EV_ID            "Event ID to filter\n"
+#define SHOW_EVENTS_SEVERITY         "Filter based on severity\n"
+#define SHOW_EVENTS_CATEGORY         "Filter based on category\n"
+#define SHOW_EVENTS_FILTER_CAT       "Event category to filter\n"
+#define SHOW_EVENTS_REVERSE          "Reverse list the event logs\n"
 #define MESSAGE_OPS_EVT_MATCH "MESSAGE_ID=50c0fa81c2a545ec982a54293f1b1945"
+#define MAX_FILTER_ARGS 3
+#define EVENT_ID_INDEX 0
+#define EVENT_SEVERITY_INDEX 1
+#define EVENT_CATEGORY_INDEX 2
 
 #define BUF_SIZE 100
 #define BASE_SIZE 20
 #define MICRO_SIZE 7
 #define MIN_SIZE 6
+#define TRUE 1
 
 
 #endif //_SHOW_EVENTS_VTY_H

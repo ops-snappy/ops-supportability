@@ -24,6 +24,7 @@
 
 
 #include "supportability_utils.h"
+#include "supportability_vty.h"
 
 #define REGEX_COMP_ERR        1000
 
@@ -123,4 +124,52 @@ compile_corefile_pattern (regex_t * regexst, const char * pattern)
       return -1;
    }
    return 0;
+}
+
+/* Function       : sev_level
+ * Responsibility : To convert severity strings to values
+ * return         : -1 if failed, otherwise severity value
+ */
+int
+sev_level(char *arg)
+{
+    const char *sev[] = {"emer","alert","crit","err","warn","notice","info","debug"};
+    int i = 0, found = 0;
+    for(i = 0; i < MAX_SEVS; i++)
+    {
+        if(!strcmp_with_nullcheck(arg, sev[i])) {
+            found = 1;
+            break;
+        }
+    }
+    if(found) {
+        return i;
+    }
+    return -1;
+}
+
+/* Function       : get_values
+ * Responsibility : read only values from keys
+ * return         : return value
+ */
+
+const char*
+get_value(const char *str)
+{
+   if(!str) {
+      return NULL;
+   }
+   while(*str!='\0')
+   {
+      /*found the split*/
+      if(*str == '=')  {
+          if(*(str+1))  {
+             /*value is present*/
+               return str+1;
+           }
+          return NULL;
+      }
+      str++;
+   }
+return NULL;
 }

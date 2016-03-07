@@ -45,6 +45,11 @@ char * strdup_with_nullcheck( const char * str1);
 char *
 trim_white_space(char *string);
 
+/* Parse journal returned value */
+const char*
+get_value(const char *str);
 
-
+/* Convert severity string to values */
+int
+sev_level(char *arg);
 #endif /* _SUPPORTABILITY_UTILS_H_ */
