@@ -1,6 +1,0 @@
----
-  -
-    feature_name: "lldp"
-    feature_desc: "Link Layer Discovery Protocol"
-    daemon:
-      - "ops-lldpd"

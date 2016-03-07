@@ -30,8 +30,8 @@
 #include "daemon.h"
 #include "unixctl.h"
 #include "diag_dump.h"
+#include "feature_mapping.h"
 
-#define DIAG_DUMP_CONF        "/etc/openswitch/supportability/ops_diagdump.yaml"
 #define DIAG_DUMP_DIR         "/tmp/ops-diag"
 #define FILE_PATH_LEN_MAX          256
 #define MAX_TIME_STR_LEN           256
@@ -50,29 +50,6 @@
 #define DIAG_DUMP_FEATURE          "Feature name  \n"
 #define DIAG_DUMP_FEATURE_BASIC    "Basic information \n"
 #define DIAG_DUMP_FEATURE_FILE     "Relative path of file\n"
-
-
-
-
-struct daemon {
-   char* name;
-   struct daemon* next;
-};
-
-struct feature {
-   char* name;
-   char* desc;
-   struct daemon*   p_daemon;
-   struct feature*   next;
-};
-
-enum  {
-   VALUE,
-   FEATURE_NAME,
-   FEATURE_DESC,
-   DAEMON,
-   MAX_NUM_KEYS
-} ;
 
 
 #define FREE(X)\

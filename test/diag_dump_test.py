@@ -331,15 +331,15 @@ def checkUnsupportedDaemon(dut01Obj, daemon):
     LogOutput('info', "2.1 Running" + tc_desc)
     LogOutput('info', "############################################\n")
 
-    shell_cmd = "cp /etc/openswitch/supportability/ops_diagdump.yaml\
-     /etc/openswitch/supportability/ops_diagdump.yaml2 "
+    shell_cmd = "cp /etc/openswitch/supportability/ops_featuremapping.yaml\
+     /etc/openswitch/supportability/ops_featuremapping.yaml2 "
     returnDevInt = dut01Obj.DeviceInteract(command=shell_cmd)
     LogOutput('info', str(returnDevInt['buffer']))
 
     shell_cmd = 'printf \'\n  -\n    feature_name: \"' + daemon + \
         '\"\n    feature_desc: \"BGP feature Sample\"\n' + \
         '    daemon:\n     - \"' + daemon + '\"    ' + ' \' ' + \
-        ' >> /etc/openswitch/supportability/ops_diagdump.yaml'
+        ' >> /etc/openswitch/supportability/ops_featuremapping.yaml'
 
     dut01Obj.DeviceInteract(command=shell_cmd)
     LogOutput('info', str(returnDevInt['buffer']))
@@ -352,6 +352,11 @@ def checkUnsupportedDaemon(dut01Obj, daemon):
 
     finalReturnCode = returnDevInt['returnCode']
     overallBuffer.append(returnDevInt['buffer'])
+
+    shell_cmd = "mv /etc/openswitch/supportability/ops_featuremapping.yaml2\
+     /etc/openswitch/supportability/ops_featuremapping.yaml "
+    dut01Obj.DeviceInteract(command=shell_cmd)
+
     if finalReturnCode != 0:
         LogOutput('error',
                   "Failed to run " + tc_desc +
@@ -383,15 +388,15 @@ def checkUnknownDaemon(dut01Obj):
     LogOutput('info', '2.2 Running ' + tc_desc)
     LogOutput('info', "############################################\n")
 
-    shell_cmd = "cp /etc/openswitch/supportability/ops_diagdump.yaml\
-     /etc/openswitch/supportability/ops_diagdump.yaml2 "
+    shell_cmd = "cp /etc/openswitch/supportability/ops_featuremapping.yaml\
+     /etc/openswitch/supportability/ops_featuremapping.yaml2 "
     returnDevInt = dut01Obj.DeviceInteract(command=shell_cmd)
     LogOutput('info', str(returnDevInt['buffer']))
 
     shell_cmd = "printf '\n  -\n    feature_name: \"garbage\"\n\
     feature_desc: \"Dummy feature Sample\"\n\
     daemon:\n     - \"ops-garb-abcd\"' >> \
-     /etc/openswitch/supportability/ops_diagdump.yaml"
+     /etc/openswitch/supportability/ops_featuremapping.yaml"
 
     returnDevInt = dut01Obj.DeviceInteract(command=shell_cmd)
     LogOutput('info', str(returnDevInt['buffer']))
@@ -401,8 +406,8 @@ def checkUnknownDaemon(dut01Obj):
     LogOutput('info', str(returnDevInt['buffer']))
 
     shell_cmd = "mv \
-    /etc/openswitch/supportability/ops_diagdump.yaml2 \
-    /etc/openswitch/supportability/ops_diagdump.yaml"
+    /etc/openswitch/supportability/ops_featuremapping.yaml2 \
+    /etc/openswitch/supportability/ops_featuremapping.yaml"
     dut01Obj.VtyshShell(enter=False)
     dut01Obj.DeviceInteract(command=shell_cmd)
     LogOutput('info', str(returnDevInt['buffer']))
@@ -441,15 +446,15 @@ def checkUnknownGarbDaemon(dut01Obj):
     LogOutput('info', '2.3 Running ' + tc_desc)
     LogOutput('info', "############################################\n")
 
-    shell_cmd = "cp /etc/openswitch/supportability/ops_diagdump.yaml\
-     /etc/openswitch/supportability/ops_diagdump.yaml2 "
+    shell_cmd = "cp /etc/openswitch/supportability/ops_featuremapping.yaml\
+     /etc/openswitch/supportability/ops_featuremapping.yaml2 "
     returnDevInt = dut01Obj.DeviceInteract(command=shell_cmd)
     LogOutput('info', str(returnDevInt['buffer']))
 
     shell_cmd = "printf '\n  -\n    feature_name: \"garbage\"\n\
     feature_desc: \"Dummy feature Sample\"\n\
     daemon:\n     - \"ops-garb-abcd\"' >> \
-     /etc/openswitch/supportability/ops_diagdump.yaml"
+     /etc/openswitch/supportability/ops_featuremapping.yaml"
 
     returnDevInt = dut01Obj.DeviceInteract(command=shell_cmd)
     LogOutput('info', str(returnDevInt['buffer']))
@@ -459,8 +464,8 @@ def checkUnknownGarbDaemon(dut01Obj):
     LogOutput('info', str(returnDevInt['buffer']))
 
     shell_cmd = "mv \
-    /etc/openswitch/supportability/ops_diagdump.yaml2 \
-    /etc/openswitch/supportability/ops_diagdump.yaml"
+    /etc/openswitch/supportability/ops_featuremapping.yaml2 \
+    /etc/openswitch/supportability/ops_featuremapping.yaml"
     dut01Obj.VtyshShell(enter=False)
     dut01Obj.DeviceInteract(command=shell_cmd)
     LogOutput('info', str(returnDevInt['buffer']))
@@ -491,7 +496,7 @@ def checkNoConfigfile(dut01Obj):
     # Variables
     overallBuffer = []
     finalReturnCode = 0
-    str_check = 'Fail to parse diagnostic yaml file. Check yaml file'
+    str_check = 'Error in retrieving the mapping of feature names to daemon'
     vtysh_cmd = 'diag-dump lldp basic'
     tc_desc = vtysh_cmd + ' test '
 
@@ -499,8 +504,8 @@ def checkNoConfigfile(dut01Obj):
     LogOutput('info', "3.1 Running " + tc_desc)
     LogOutput('info', "############################################\n")
 
-    shell_cmd = "mv /etc/openswitch/supportability/ops_diagdump.yaml\
-     /etc/openswitch/supportability/ops_diagdump.yaml2 "
+    shell_cmd = "mv /etc/openswitch/supportability/ops_featuremapping.yaml\
+     /etc/openswitch/supportability/ops_featuremapping.yaml2 "
     returnDevInt = dut01Obj.DeviceInteract(command=shell_cmd)
     LogOutput('info', str(returnDevInt['buffer']))
 
@@ -513,8 +518,8 @@ def checkNoConfigfile(dut01Obj):
     LogOutput('info', str(returnDevInt['buffer']))
 
     shell_cmd = "mv \
-    /etc/openswitch/supportability/ops_diagdump.yaml2 \
-    /etc/openswitch/supportability/ops_diagdump.yaml"
+    /etc/openswitch/supportability/ops_featuremapping.yaml2 \
+    /etc/openswitch/supportability/ops_featuremapping.yaml"
     dut01Obj.VtyshShell(enter=False)
     dut01Obj.DeviceInteract(command=shell_cmd)
     LogOutput('info', str(returnDevInt['buffer']))
@@ -546,18 +551,18 @@ def checkEmptyFile(dut01Obj):
     vtysh_cmd = 'diag-dump list'
     overallBuffer = []
     finalReturnCode = 0
-    str_check = 'Diagnostic Dump Supported Features List'
+    str_check = 'Error in retrieving the mapping of feature names to daemon'
     tc_desc = vtysh_cmd + ' test '
 
     LogOutput('info', "\n############################################")
     LogOutput('info', "3.2 Running diag-dump empty config file test")
     LogOutput('info', "############################################\n")
-    shell_cmd = "mv -f /etc/openswitch/supportability/ops_diagdump.yaml\
-     /etc/openswitch/supportability/ops_diagdump.yaml2 "
+    shell_cmd = "mv -f /etc/openswitch/supportability/ops_featuremapping.yaml\
+     /etc/openswitch/supportability/ops_featuremapping.yaml2 "
     returnDevInt = dut01Obj.DeviceInteract(command=shell_cmd)
     LogOutput('info', str(returnDevInt['buffer']))
 
-    shell_cmd = "touch /etc/openswitch/supportability/ops_diagdump.yaml"
+    shell_cmd = "touch /etc/openswitch/supportability/ops_featuremapping.yaml"
     returnDevInt = dut01Obj.DeviceInteract(command=shell_cmd)
     LogOutput('info', str(returnDevInt['buffer']))
 
@@ -566,13 +571,79 @@ def checkEmptyFile(dut01Obj):
     LogOutput('info', str(returnDevInt['buffer']))
 
     shell_cmd = "mv -f\
-    /etc/openswitch/supportability/ops_diagdump.yaml2 \
-    /etc/openswitch/supportability/ops_diagdump.yaml"
+    /etc/openswitch/supportability/ops_featuremapping.yaml2 \
+    /etc/openswitch/supportability/ops_featuremapping.yaml"
     dut01Obj.VtyshShell(enter=False)
     dut01Obj.DeviceInteract(command=shell_cmd)
     LogOutput('info', str(returnDevInt['buffer']))
     finalReturnCode = returnDevInt['returnCode']
     overallBuffer.append(returnDevInt['buffer'])
+    if finalReturnCode != 0:
+        LogOutput('error',
+                  "Failed to run " + tc_desc +
+                  " on device " + str(dut01Obj.device))
+        return False
+    else:
+        if (str_check not in returnDevInt['buffer']):
+            LogOutput(
+                'error', tc_desc + "Test Case Failure,refer output below")
+            for outputs in overallBuffer:
+                LogOutput('info', str(outputs))
+            return False
+        else:
+            LogOutput('info',
+                      tc_desc + "ran successfully on device " +
+                      str(dut01Obj.device))
+            return True
+
+
+def checkCorruptedYamlFile(dut01Obj):
+    # Variables
+    overallBuffer = []
+    finalReturnCode = 0
+    str_check = 'Diagnostic dump captured for feature'
+    daemon = 'lldp'
+    vtysh_cmd = 'diag-dump ' + daemon + ' basic'
+    tc_desc = vtysh_cmd + ' test '
+
+    LogOutput('info', "\n############################################")
+    LogOutput('info', "3.3 Running" + tc_desc)
+    LogOutput('info', "############################################\n")
+
+    shell_cmd = "cp /etc/openswitch/supportability/ops_featuremapping.yaml\
+     /etc/openswitch/supportability/ops_featuremapping.yaml2 "
+    returnDevInt = dut01Obj.DeviceInteract(command=shell_cmd)
+    LogOutput('info', str(returnDevInt['buffer']))
+
+    shell_cmd = 'printf  ---   -     feature_name: \"lldp\"' + \
+        ' feature_desc: \"Link Layer Discovery Protocol\" ' + \
+        ' daemon:       - \"ops-lldpd\" xxxxxxxxxxxxxxxxxxxxxxxxx ' + \
+        ' aksjsjjdkdkdjddj kdkdkdkdkdkdkdk ---   ' + \
+        ' -     feature_name: \"lldp\" ' + \
+        '  feature_desc: \"Link Layer Discovery Protocol\" ' + \
+        '    daemon:       - \"ops-lldpd\" xxxxxxxxxxxxxxxxxxxxxxxxx ' + \
+        ' aksjsjjdkdkdjddj kdkdkdkdkdkdkdk ' + \
+        ' ---   -     feature_name: \"lldp\"     feature_desc: ' + \
+        ' \"Link Layer Discovery Protocol\"     daemon:       - \"ops-lldpd\"'\
+        + '  xxxxxxxxxxxxxxxxxxxxxxxxx aksjsjjdkdkdjddj kdkdkdkdkdkdkdk' + \
+        ' >>  /etc/openswitch/supportability/ops_featuremapping.yaml'
+
+    dut01Obj.DeviceInteract(command=shell_cmd)
+    LogOutput('info', str(returnDevInt['buffer']))
+
+    dut01Obj.VtyshShell(enter=True)
+    returnDevInt = dut01Obj.DeviceInteract(command=vtysh_cmd)
+    LogOutput('info', str(returnDevInt['buffer']))
+
+    dut01Obj.VtyshShell(enter=False)
+
+    finalReturnCode = returnDevInt['returnCode']
+    overallBuffer.append(returnDevInt['buffer'])
+
+    shell_cmd = "mv /etc/openswitch/supportability/ops_featuremapping.yaml2\
+    /etc/openswitch/supportability/ops_featuremapping.yaml "
+    dut01Obj.DeviceInteract(command=shell_cmd)
+
     if finalReturnCode != 0:
         LogOutput('error',
                   "Failed to run " + tc_desc +
@@ -636,6 +707,9 @@ class Test_diag_dump:
 
     def test_diag_dump_empty_config_file(self):
         assert(checkEmptyFile(dut01Obj))
+
+    def test_diag_dump_corrupted_yaml_file(self):
+        assert(checkCorruptedYamlFile(dut01Obj))
 
    # Teardown Class
     def teardown_class(cls):
