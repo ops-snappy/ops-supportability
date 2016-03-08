@@ -40,6 +40,9 @@
 #define SHOW_VLOG_LIST_FEATURE   "List of Supported Features\n"
 #define SHOW_VLOG_FEATURE        "Displays feature configuration\n"
 #define SHOW_VLOG_DAEMON         "Displays daemon configuration\n"
+#define SHOW_VLOG_FILTER_SEV     "Filter based on severity level\n"
+#define SHOW_VLOG_FILTER_DAEMON  "Filter based on daemon\n"
+#define SHOW_VLOG_FILTER_WORD    "Vlogs are filtered by daemon Word\n"
 #define VLOG_CONFIG_FEATURE      "Configure the feature\n"
 #define VLOG_CONFIG_DAEMON       "Configure the daemon\n"
 #define VLOG_CONFIG              "Configure the feature or daemon\n"
@@ -52,6 +55,5 @@
 #define VLOG_LOG_LEVEL_INFO      "Configure to send emer,err,warn and info logs to specified destination\n"
 #define VLOG_LOG_LEVEL_DBG       "Configure to send emer,err,warn,info and dbg logs to specified destination\n"
 #define VLOG_LOG_LEVEL_OFF       "Disable logging to specified destination\n"
-
 
 #endif /*__VLOG_LIST_VTY_H*/
