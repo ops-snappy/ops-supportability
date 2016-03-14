@@ -20,3 +20,13 @@
       - "show lldp configuration"
       - "show lldp statistics"
       - "show lldp neighbor-info"
+
+# Show Tech LAG Feature Definition
+  feature:
+  -
+    feature_desc: "Link Aggregation Protocol"
+    feature_name: LAG
+    cli_cmds:
+      - "show lacp configuration"
+      - "show lacp aggregates"
+      - "show lacp interfaces"
