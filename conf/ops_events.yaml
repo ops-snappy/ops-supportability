@@ -6,6 +6,34 @@ categories:
   description: 'Events related to LLDP'
   category_rank: 1
 
+- event_category: FAN
+  description: 'Events related to FAN'
+  category_rank: 2
+
+- event_category: POWER
+  description: 'Events related to POWER'
+  category_rank: 3
+
+- event_category: INTERFACE
+  description: 'Events related to INTERFACE'
+  category_rank: 4
+
+- event_category: LED
+  description: 'Events related to LED'
+  category_rank: 5
+
+- event_category: PORT
+  description: 'Events related to PORT'
+  category_rank: 6
+
+- event_category: SYS
+  description: 'Events related to system initialization'
+  category_rank: 7
+
+- event_category: TEMPERATURE
+  description: 'Events related to TEMPERATURE'
+  category_rank: 8
+
 event_definitions:
 #- event_name: XYZ_UP
 #  event_category: ABC
@@ -78,3 +106,163 @@ event_definitions:
   keys: hold
   event_description_template:
       'Configured LLDP tx-hold with {hold}'
+
+- event_name: FAN_COUNT
+  event_category: FAN
+  event_ID : 2001
+  severity: LOG_INFO
+  keys: count, subsystem
+  event_description_template:
+      'There are {count} total fans in subsystem {subsystem}'
+
+- event_name: FAN_SPEED
+  event_category: FAN
+  event_ID : 2002
+  severity: LOG_INFO
+  keys: subsystem, speedval, value
+  event_description_template:
+     'subsystem {subsystem} setting fan speed control register to {speedval}: {value}'
+
+- event_name: FAN_DIRECTION
+  event_category: FAN
+  event_ID : 2003
+  severity: LOG_INFO
+  keys: value
+  event_description_template:
+      'Direction is {value}'
+
+- event_name: POWER_COUNT
+  event_category: POWER
+  event_ID : 3001
+  severity: LOG_INFO
+  keys: count, subsystem
+  event_description_template:
+      'There are {count} psus in subsystem {subsystem}'
+
+- event_name: INTERFACE_UP
+  event_category: INTERFACE
+  event_ID : 4001
+  severity: LOG_INFO
+  keys: interface
+  event_description_template:
+      'Interface port_admin set to up for {interface} interface'
+
+- event_name: INTERFACE_DOWN
+  event_category: INTERFACE
+  event_ID : 4002
+  severity: LOG_INFO
+  keys: interface
+  event_description_template:
+      'Interface port_admin set to down for {interface} interface'
+
+- event_name: LED_COUNT
+  event_category: LED
+  event_ID : 5001
+  severity: LOG_INFO
+  keys: count, subsystem
+  event_description_template:
+      'There are {count} LED types in subsystem {subsystem}'
+
+- event_name: PORT_SOCKET_CREATION_FAIL
+  event_category: PORT
+  event_ID : 6001
+  severity: LOG_INFO
+  keys: error
+  event_description_template:
+      'Netlink socket creation failed {error}'
+
+- event_name: PORT_SOCKET_BIND_FAIL
+  event_category: PORT
+  event_ID : 6002
+  severity: LOG_INFO
+  keys: error
+  event_description_template:
+      'Netlink socket bind failed {error}'
+
+- event_name: PORT_MTU_FAIL
+  event_category: PORT
+  event_ID : 6003
+  severity: LOG_INFO
+  keys: mtu, interface
+  event_description_template:
+      'Netlink failed to set mtu {mtu} for interface {interface}'
+
+- event_name: PORT_INTERFACE_FAIL
+  event_category: PORT
+  event_ID : 6004
+  severity: LOG_INFO
+  keys: status, interface
+  event_description_template:
+      'Netlink failed to bring {status} the interface {interface}'
+
+- event_name: PORT_UNKNOWN_VLAN_POLICY
+  event_category: PORT
+  event_ID : 6005
+  severity: LOG_INFO
+  keys: policy
+  event_description_template:
+      'Unknown internal vlan policy {policy}'
+
+- event_name: PORT_VLAN_ALLOCATION_ERROR
+  event_category: PORT
+  event_ID : 6006
+  severity: LOG_INFO
+  keys: vlan
+  event_description_template:
+      'Error allocating internal vlan for port {vlan}'
+
+- event_name: SYS_FRU_DATA_READ_FAILURE
+  event_category: SYS
+  event_ID : 7001
+  severity: LOG_INFO
+  keys: NA
+  event_description_template:
+      'Failed to read FRU data from base system'
+
+- event_name: SYS_FRU_HEADER_READ_FAILURE
+  event_category: SYS
+  event_ID : 7002
+  severity: LOG_INFO
+  keys: NA
+  event_description_template:
+      'Failed to read FRU header'
+
+- event_name: SYS_FRU_EEPROM_HEADER_READ_FAILURE
+  event_category: SYS
+  event_ID : 7003
+  severity: LOG_INFO
+  keys: NA
+  event_description_template:
+      'Error reading FRU EEPROM Header'
+
+- event_name: SYS_INITIALIZE_DEVICE_FAILURE
+  event_category: SYS
+  event_ID : 7004
+  severity: LOG_INFO
+  keys: NA
+  event_description_template:
+      'Failed to intialize devices'
+
+- event_name: SYS_ALLOCATE_MEMORY_FAILURE
+  event_category: SYS
+  event_ID : 7005
+  severity: LOG_INFO
+  keys: value
+  event_description_template:
+      'Failed to allocate memory for {value}'
+
+- event_name: TEMP_SENSOR_UNRECOGNIZED
+  event_category: TEMPERATURE
+  event_ID : 8001
+  severity: LOG_INFO
+  keys: type
+  event_description_template:
+      'Unrecognized sensor type {type}'
+
+- event_name: TEMP_SENSOR_SHUTDOWN
+  event_category: TEMPERATURE
+  event_ID : 8002
+  severity: LOG_INFO
+  keys: name
+  event_description_template:
+      'Emergency shutdown initiated for sensor {name}'
