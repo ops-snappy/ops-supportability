@@ -42,6 +42,10 @@ categories:
   description: 'Events related to Sub-Interface'
   category_rank: 10
 
+- event_category: OSPFv2
+  description: 'Events related to OSPFv2'
+  category_rank: 11
+
 event_definitions:
 #- event_name: XYZ_UP
 #  event_category: ABC
@@ -378,3 +382,33 @@ event_definitions:
   keys: interface, state
   event_description_template:
       'Sub-Interface {interface}, configured administratively {state}'
+
+- event_name: OSPFv2_ROUTE
+  event_category: OSPFv2
+  event_ID : 11001
+  severity: LOG_INFO
+  keys: event, prefix, route
+  description:
+    'Logs OSPFv2 route add and delete.'
+  event_description_template:
+      '{event} with {destination} {nexthops}'
+
+- event_name: OSPFv2_NSM_STATE
+  event_category: OSPFv2
+  event_ID : 11002
+  severity: LOG_INFO
+  keys: router-id, ospf-interface, state, next_state, event
+  description:
+    'Logs the changes in OSPFv2 neighbour state machine.'
+  event_description_template:
+      'AdjChg: Nbr {router-id} on {ospf-interface}: {state} -> {next_state} ({event})'
+
+- event_name: OSPFv2_ROUTER_ID
+  event_category: OSPFv2
+  event_ID : 11003
+  severity: LOG_INFO
+  keys: old, new
+  description:
+    'Logs the changes in the router-id.'
+  event_description_template:
+      'Router-id  updated from {old} to {new}'
