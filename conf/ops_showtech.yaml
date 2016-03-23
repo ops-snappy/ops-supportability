@@ -8,6 +8,7 @@
       - "show version"
       - "show system"
       - "show interface mgmt"
+      - "show interface dom"
       - "show vlan"
       - "show ntp status"
       - "show events"
