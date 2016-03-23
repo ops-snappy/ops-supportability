@@ -792,10 +792,14 @@ DEFUN_NOLOCK (cli_platform_show_tech_feature,
   cli_platform_show_tech_feature_cmd,
   "show tech FEATURE",
   SHOW_STR
-  SHOW_TECH_STR
-  SHOW_TECH_FEATURE_STR)
+  SHOW_TECH_STR)
   {
-    return cli_show_tech(argv[0],NULL);
+      if(argv[1] != NULL) {
+       return cli_show_tech_file(argv[1],argv[0],0);
+      }
+      else {
+          return cli_show_tech(argv[0],NULL);
+      }
   }
 
 #endif /* _ST_SUBFEATURE_ENABLED */

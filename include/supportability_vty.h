@@ -24,6 +24,7 @@
 #ifndef _SUPPORTABILITY_VTY_H_
 
 #define _SUPPORTABILITY_VTY_H_
+#include <yaml.h>
 
 #define MAX_SEVS  8
 #define SEVERITY_LEVEL_EMER   "Display logs with LOG_EMER severity\n"
@@ -34,7 +35,19 @@
 #define SEVERITY_LEVEL_NOTICE "Display logs with LOG_NOTICE severity\n"
 #define SEVERITY_LEVEL_INFO   "Display logs with LOG_INFO severity\n"
 #define SEVERITY_LEVEL_DBG    "Display logs with LOG_DEBUG severity\n"
+#define MAX_FEATURES           100
+#define MAX_FEATURE_NAME_SIZE  50
+#define MAX_CMD_SIZE           (MAX_FEATURES*MAX_FEATURE_NAME_SIZE)
+#define MAX_HELP_SIZE          256
+#define MAX_EV_CATEGORIES      999
+#define MAX_FEATURE_HELP_SIZE  (MAX_FEATURES*MAX_HELP_SIZE)
+#define MAX_EV_HELP_SIZE       (MAX_EV_CATEGORIES*MAX_HELP_SIZE)
+#define PID_DIRECTORY         "/run/openvswitch/"
+#define MAX_FILENAME_SIZE      100
+#define MAX_DAEMONS            200
+#define MAX_VLOG_CMD           (MAX_DAEMONS*MAX_FEATURE_NAME_SIZE)
 
+extern char * get_yaml_tokens(yaml_parser_t *parser,  yaml_event_t **tok, FILE *fh);
 extern struct cmd_element vtysh_diag_dump_list_cmd;
 extern struct cmd_element vtysh_diag_dump_cmd;
 extern struct cmd_element cli_platform_show_tech_cmd;

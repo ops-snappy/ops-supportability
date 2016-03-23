@@ -24,7 +24,9 @@
 #ifndef _SHOW_EVENTS_VTY_H
 #define _SHOW_EVENTS_VTY_H
 
-
+#define SHOW_EVENTS_CMD  "show events {event-id <1001-999999>| severity \
+                  (emer | alert | crit | err | warn | notice | info | debug) \
+                  | reverse | category ("
 #define SHOW_EVENTS_STR              "Display event logs\n"
 #define SHOW_EVENTS_FILTER_EV_ID     "Filter based on event ID\n"
 #define SHOW_EVENTS_EV_ID            "Event ID to filter\n"
@@ -36,8 +38,9 @@
 #define MAX_FILTER_ARGS 3
 #define EVENT_ID_INDEX 0
 #define EVENT_SEVERITY_INDEX 1
-#define EVENT_CATEGORY_INDEX 2
+#define EVENT_CATEGORY_INDEX 3
 
+#define EVENTS_YAML_FILE "/etc/openswitch/supportability/ops_events.yaml"
 #define BUF_SIZE 100
 #define BASE_SIZE 20
 #define MICRO_SIZE 7

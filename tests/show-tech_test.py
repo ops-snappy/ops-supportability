@@ -493,8 +493,7 @@ def checkShowTechUnSupportedFeature(dut01Obj):
         command="show tech  !@#$%^&*((QWERTYUIOPLFDSAZXCVBNM<>)(&^%$#!",
         errorCheck=False
     )
-
-    # exit the vtysh shell
+ # exit the vtysh shell
     returnStructure = dut01Obj.VtyshShell(enter=False)
     overallBuffer.append(returnStructure.buffer())
     returnCode = returnStructure.returnCode()
@@ -505,7 +504,7 @@ def checkShowTechUnSupportedFeature(dut01Obj):
         return False
 
     overallBuffer.append(returnDevInt['buffer'])
-    if ("Feature !@#$%^&*((QWERTYUIOPLFDSAZXCVBNM<>)(&^%$#! is not supported"
+    if ("Unknown command"
        not in returnDevInt['buffer']):
         LogOutput('error',
                   "Test Case Failure,refer output below")
@@ -518,7 +517,6 @@ def checkShowTechUnSupportedFeature(dut01Obj):
                   successfully on device " +
                   str(dut01Obj.device))
         return True
-
 
 def checkShowTechUnSupportedSubFeature(dut01Obj):
     LogOutput('info',
@@ -652,7 +650,7 @@ def TestNoShowTechConfigfile(dut01Obj):
     dut01Obj.DeviceInteract(command="mv \
     /etc/openswitch/supportability/ops_showtech.yaml2 \
     /etc/openswitch/supportability/ops_showtech.yaml")
-    if "Failed to obtain show tech configuration" in returnDevInt['buffer']:
+    if "Unknown command" in returnDevInt['buffer']:
         return True
     else:
         LogOutput('error',

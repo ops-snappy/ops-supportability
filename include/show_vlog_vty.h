@@ -55,5 +55,7 @@
 #define VLOG_LOG_LEVEL_INFO      "Configure to send emer,err,warn and info logs to specified destination\n"
 #define VLOG_LOG_LEVEL_DBG       "Configure to send emer,err,warn,info and dbg logs to specified destination\n"
 #define VLOG_LOG_LEVEL_OFF       "Disable logging to specified destination\n"
+#define VLOG_CMD                 "show vlog { severity \
+(emer | alert | crit | err | warn | notice | info | debug) | daemon ("
 
 #endif /*__VLOG_LIST_VTY_H*/

@@ -100,6 +100,7 @@ journal_filter(const char *arg, int index, sd_journal *journal_handle)
         }
     }
     else if(index == EVENT_CATEGORY_INDEX) {
+        strnupr((char*)arg, strlen(arg));
         snprintf(buf, BUF_SIZE, "OPS_EVENT_CATEGORY=%s", arg);
     }
     else {
@@ -268,12 +269,12 @@ DEFUN_NOLOCK (cli_platform_show_events,
         SEVERITY_LEVEL_NOTICE
         SEVERITY_LEVEL_INFO
         SEVERITY_LEVEL_DBG
-        SHOW_EVENTS_CATEGORY
-        SHOW_EVENTS_FILTER_CAT
-        SHOW_EVENTS_REVERSE)
+        SHOW_EVENTS_REVERSE
+        SHOW_EVENTS_CATEGORY)
 {
     int i = 0, return_value = 0, reverse = 0, filter = 0;
     sd_journal *journal_handle = NULL;
+
     /* Open Journal File to read Event Logs */
     return_value = sd_journal_open(&journal_handle, SD_JOURNAL_LOCAL_ONLY);
 
@@ -291,7 +292,7 @@ DEFUN_NOLOCK (cli_platform_show_events,
         return CMD_WARNING;
     }
 
-    if(argv[3] != NULL) {
+    if(argv[2] != NULL) {
         /* Reverse list option */
         return_value = sd_journal_seek_tail(journal_handle);
         if(return_value < 0) {
@@ -304,10 +305,12 @@ DEFUN_NOLOCK (cli_platform_show_events,
         reverse = TRUE;
     }
     /* Filter Event Logs based on given filters in CLI */
-    while(i < MAX_FILTER_ARGS)
+    while(i <= MAX_FILTER_ARGS)
     {
         if(argv[i] != NULL) {
-            return_value = journal_filter(argv[i], i, journal_handle);
+            if(i != 2) {
+                return_value = journal_filter(argv[i], i, journal_handle);
+            }
             if(return_value < 0) {
                 sd_journal_close(journal_handle);
                 vty_out(vty,"Log Filter failed%s",VTY_NEWLINE);

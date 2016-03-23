@@ -55,8 +55,8 @@
 #define DAEMON_REQUEST           2
 #define SHOW_VLOG_CONFIG_REQUEST 3
 #define SET_REQUEST              4
-#define DAEMON_INDEX             0
-#define SEVERITY_INDEX           1
+#define DAEMON_INDEX             1
+#define SEVERITY_INDEX           0
 #define FREE(X)                  if(X) { free(X); X=NULL;}
 #define MESSAGE_OVS_MATCH        "_TRANSPORT=syslog"
 
@@ -748,8 +748,6 @@ DEFUN_NOLOCK (cli_platform_show_vlog,
    "{daemon WORD | severity (emer | alert | crit | err | warn | notice | info | debug)}",
    SHOW_STR
    SHOW_VLOG_STR
-   SHOW_VLOG_FILTER_DAEMON
-   SHOW_VLOG_FILTER_WORD
    SHOW_VLOG_FILTER_SEV
    SEVERITY_LEVEL_EMER
    SEVERITY_LEVEL_ALERT
@@ -758,7 +756,8 @@ DEFUN_NOLOCK (cli_platform_show_vlog,
    SEVERITY_LEVEL_WARN
    SEVERITY_LEVEL_NOTICE
    SEVERITY_LEVEL_INFO
-   SEVERITY_LEVEL_DBG)
+   SEVERITY_LEVEL_DBG
+   SHOW_VLOG_FILTER_DAEMON)
 {
     sd_journal *journal_handle = NULL;
     int i = 0, return_value = 0;

@@ -438,7 +438,6 @@ def checkUnknownGarbDaemon(dut01Obj):
     # Variables
     overallBuffer = []
     finalReturnCode = 0
-    str_check = 'feature is not present'
     vtysh_cmd = 'diag-dump ops-garb-abcd basic'
     tc_desc = vtysh_cmd + ' test '
 
@@ -473,30 +472,26 @@ def checkUnknownGarbDaemon(dut01Obj):
     finalReturnCode = returnDevInt['returnCode']
     overallBuffer.append(returnDevInt['buffer'])
 
-    if finalReturnCode != 0:
-        LogOutput('error',
-                  "Failed to run " + tc_desc +
-                  " on device " + str(dut01Obj.device))
-        return False
-    else:
-        if (str_check not in returnDevInt['buffer']):
-            LogOutput(
-                'error', tc_desc + "Test Case Failure,refer output below")
-            for outputs in overallBuffer:
-                LogOutput('info', str(outputs))
-            return False
-        else:
-            LogOutput('info',
+    if finalReturnCode == 3:
+        LogOutput('info',
                       tc_desc + "ran successfully on device " +
                       str(dut01Obj.device))
-            return True
+        return True
+    else:
+        LogOutput('info',
+                   tc_desc + "failed on device " +
+                   str(dut01Obj.device))
+        LogOutput(
+                'error', tc_desc + "Test Case Failure,refer output below")
+        for outputs in overallBuffer:
+                LogOutput('info', str(outputs))
+        return False
 
 
 def checkNoConfigfile(dut01Obj):
     # Variables
     overallBuffer = []
     finalReturnCode = 0
-    str_check = 'Error in retrieving the mapping of feature names to daemon'
     vtysh_cmd = 'diag-dump lldp basic'
     tc_desc = vtysh_cmd + ' test '
 
@@ -526,24 +521,20 @@ def checkNoConfigfile(dut01Obj):
 
     finalReturnCode = returnDevInt['returnCode']
     overallBuffer.append(returnDevInt['buffer'])
-    if finalReturnCode != 0:
-        LogOutput('error',
-                  "Failed to run " + tc_desc +
-                  " on device " + str(dut01Obj.device))
-        return False
+    if finalReturnCode == 3:
+        LogOutput('info',
+                   tc_desc + "ran successfully on device " +
+                   str(dut01Obj.device))
+        return True
     else:
-        if (str_check not in returnDevInt['buffer']):
-            LogOutput(
+        LogOutput('info',
+                   tc_desc + "failed on device " +
+                   str(dut01Obj.device))
+        LogOutput(
                 'error', tc_desc + "Test Case Failure,refer output below")
-            for outputs in overallBuffer:
-                LogOutput('info', str(outputs))
-            return False
-        else:
-            LogOutput('info',
-                      tc_desc + "ran successfully on device " +
-                      str(dut01Obj.device))
-            return True
-
+        for outputs in overallBuffer:
+               LogOutput('info', str(outputs))
+        return False
 
 def checkEmptyFile(dut01Obj):
 
@@ -551,7 +542,6 @@ def checkEmptyFile(dut01Obj):
     vtysh_cmd = 'diag-dump list'
     overallBuffer = []
     finalReturnCode = 0
-    str_check = 'Error in retrieving the mapping of feature names to daemon'
     tc_desc = vtysh_cmd + ' test '
 
     LogOutput('info', "\n############################################")
@@ -578,23 +568,20 @@ def checkEmptyFile(dut01Obj):
     LogOutput('info', str(returnDevInt['buffer']))
     finalReturnCode = returnDevInt['returnCode']
     overallBuffer.append(returnDevInt['buffer'])
-    if finalReturnCode != 0:
-        LogOutput('error',
-                  "Failed to run " + tc_desc +
-                  " on device " + str(dut01Obj.device))
-        return False
+    if finalReturnCode == 3:
+        LogOutput('info',
+                   tc_desc + "ran successfully on device " +
+                   str(dut01Obj.device))
+        return True
     else:
-        if (str_check not in returnDevInt['buffer']):
-            LogOutput(
+         LogOutput('error',
+                   "Failed to run " + tc_desc +
+                   " on device " + str(dut01Obj.device))
+         LogOutput(
                 'error', tc_desc + "Test Case Failure,refer output below")
-            for outputs in overallBuffer:
-                LogOutput('info', str(outputs))
-            return False
-        else:
-            LogOutput('info',
-                      tc_desc + "ran successfully on device " +
-                      str(dut01Obj.device))
-            return True
+         for outputs in overallBuffer:
+               LogOutput('info', str(outputs))
+         return False
 
 
 def checkCorruptedYamlFile(dut01Obj):

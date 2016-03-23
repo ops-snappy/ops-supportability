@@ -52,4 +52,13 @@ get_value(const char *str);
 /* Convert severity string to values */
 int
 sev_level(char *arg);
+
+/* Convert from lower to upper case */
+char*
+strnupr(char *str, int size);
+
+/* Convert from upper to lower case */
+char*
+strnlwr(char *str, int size);
+
 #endif /* _SUPPORTABILITY_UTILS_H_ */
