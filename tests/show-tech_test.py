@@ -669,7 +669,7 @@ def TestNoShowTechConfigfile(dut01Obj):
     dut01Obj.DeviceInteract(command="mv \
     /etc/openswitch/supportability/ops_showtech.yaml2 \
     /etc/openswitch/supportability/ops_showtech.yaml")
-    if "Failed to obtain Show Tech configuration" in returnDevInt['buffer']:
+    if "Failed to obtain show tech configuration" in returnDevInt['buffer']:
         return True
     else:
         LogOutput('error',
@@ -707,7 +707,7 @@ def TestShowTechCorruptedConfigFile(dut01Obj):
     /etc/openswitch/supportability/ops_showtech.yaml2 \
     /etc/openswitch/supportability/ops_showtech.yaml")
 
-    if "Failed to obtain Show Tech configuration" in returnDevInt['buffer']:
+    if "Failed to obtain show tech configuration" in returnDevInt['buffer']:
         return True
     else:
         LogOutput('error',
