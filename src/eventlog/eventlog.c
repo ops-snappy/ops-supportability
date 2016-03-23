@@ -433,6 +433,36 @@ char
     return kv_pair;
 }
 
+/* make_key_format
+ * Make key name string in format "{KEY}"
+ *
+ * returns 0 on success, -1 on failure.
+ */
+int
+make_key_format(char *key)
+{
+    int len = 0, i = 0;
+    if(key == NULL) {
+        return -1;
+    }
+    len = strlen(key);
+    if(len > (KEY_VALUE_SIZE-2)) {
+        VLOG_ERR("Key name too large");
+        return -1;
+    }
+
+    /* Move over! */
+    for (i = len; i >= 0; i--)
+    {
+        key[i + 1] = key[i];
+    }
+
+    /* Now plug in the new prefix. */
+    key[0] = '{';
+    key[len+1] = '}';
+    return 0;
+}
+
 /* replace_str
  * Search & replace the provided key in the string
  * with value
@@ -444,14 +474,38 @@ char
 {
     static char buffer[MAX_LOG_STR] = {0,};
     char *p = NULL;
-
-    if(!(p = strstr(str, orig)))
-        return str;
-
-    strncpy(buffer, str, p-str);
-    buffer[p-str] = '\0';
-
-    sprintf(buffer+(p-str), "%s%s", rep, p+strlen(orig));
+    char key_name[(strlen(orig)+2)];
+    int size = 0;
+    if(orig != NULL) {
+        size = strlen(orig);
+    }
+    else {
+        return NULL;
+    }
+    strncpy(key_name, orig, (size+1));
+    /* Prepend & append '}' to key name */
+    if(make_key_format(key_name) < 0) {
+        return NULL;
+    }
+    /* Loop till we replace all keys with same name in str */
+    while((p = strstr(str, key_name)) != NULL)
+    {
+        if(str != NULL) {
+            strncpy(buffer, str, p-str);
+        }
+        else {
+            return NULL;
+        }
+        buffer[p-str] = '\0';
+        sprintf(buffer+(p-str), "%s%s", rep, p+strlen(key_name));
+        size = strlen(buffer);
+        if(str != NULL) {
+            strncpy(str, buffer, (size+1));
+        }
+        else {
+            return NULL;
+        }
+    }
 
     return buffer;
 }
@@ -488,6 +542,9 @@ populate_str(char *s1, char *s2)
         token = strtok(NULL, "=");
         if(token != NULL)
         final = replace_str(s1, prev, token);
+        if(final == NULL) {
+            return -1;
+        }
     }
     size = strlen(final);
     if((size > 0) && (size < MAX_LOG_STR)) {
@@ -497,38 +554,6 @@ populate_str(char *s1, char *s2)
         free(string);
         return -1;
     }
-    free(string);
-    return 0;
-}
-
-/* del_character
- * Deletes the given 2 characters from the string.
- *
- * Returns -1 on failure, on success returns 0.
- */
-int
-delete_character(char *str, char ch, char chh)
-{
-    int i = 0, j = 0;
-    int size = 0;
-    char ch1;
-    char *string;
-    if(str == NULL) {
-        return -1;
-    }
-    size = asprintf(&string, "%s", str);
-    if(size == -1) {
-        return -1;
-    }
-    size = strlen(str);
-    for (i = 0; i < size; i++) {
-        if ((string[i] != ch) && (string[i] != chh)) {
-            ch1 = string[i];
-            str[j] = ch1;
-            j++;
-        }
-    }
-    str[j] = '\0';
     free(string);
     return 0;
 }
@@ -627,7 +652,6 @@ log_event(char *ev_name,...)
     key_nums = ev_table[index].num_of_keys;
     /* Keys are defined with '{' & '}' in the
      * YAML file. Let's remove that */
-    ret = delete_character(evt_msg, '{', '}');
     if(ret < 0) {
         return -1;
     }
