@@ -36,18 +36,92 @@
 #include <errno.h>
 #include <unistd.h>
 #include <time.h>
+#include <pthread.h>
+#include <signal.h>
 
 VLOG_DEFINE_THIS_MODULE (vtysh_show_tech_cli);
 
 #define     READ_LINE_SIZE    256
 #define     BASH_CAT_CMD      "bashcat"
+#define     CMD_MAX_TIME      60       //in secs
+#define     USER_INT_ALARM    10       //in secs
 
-/* Function       : exec_showtech_cmd
- * Resposibility  : Parse the cli command and execute as needed
+#ifndef FALSE
+#define     FALSE             0
+#endif
+
+#ifndef TRUE
+#define     TRUE              1
+#endif
+
+void user_interrupt_handler(int );
+
+/* show tech global var should be intialized to zero */
+bool gUserInterrupt        = FALSE ;
+bool gUserInterruptAlarm   = FALSE ;
+bool gCommandFailed        = FALSE ;
+bool gThreadCancelled      = FALSE ;
+int  gVtyOldType           = 0     ;
+int  gUserInterruptVtyType = -1;
+
+pthread_mutex_t waitMutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t waitCond = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t cleanupMutex = PTHREAD_MUTEX_INITIALIZER;
+
+
+extern pthread_mutex_t vtysh_ovsdb_mutex;
+
+/* Function       : st_mutex_lock
+ * Resposibility  : wrapper for mutex lock sys call, to log failed state
+ * Return         : NULL
+ */
+int st_mutex_lock(pthread_mutex_t *mutex)
+{
+    int rc = -1 ;
+    rc = pthread_mutex_lock(mutex);
+    if(rc)
+    {
+        VLOG_ERR("show tech:mutex lock failed, rc =%d", rc);
+    }
+    return rc;
+}
+
+/* Function       : st_mutex_unlock
+ * Resposibility  : wrapper for mutex unlock sys call, to log failed state
+ * Return         : NULL
+ */
+int st_mutex_unlock(pthread_mutex_t *mutex)
+{
+    int rc = -1 ;
+    rc = pthread_mutex_unlock(mutex);
+    if(rc)
+    {
+        VLOG_ERR("show tech:mutex unlock failed, rc =%d", rc);
+    }
+    return rc;
+}
+
+/* Function       : st_alarm
+ * Resposibility  : wrapper for alarm sys call, to log failed state
+ * Return         : NULL
+ */
+unsigned st_alarm(unsigned seconds)
+{
+    int rc = -1 ;
+    rc = alarm(seconds);
+    if(rc)
+    {
+        VLOG_ERR("show tech:alarm failed, rc =%d", rc);
+    }
+    return rc;
+}
+
+/* Function       : exec_showtech_cmd_on_thread
+ * Resposibility  : Parse the cli command and execute as needed on new thread
  * Return         : CMD_SUCCESS on success CMD_WARNING otherwise
  */
 int
-exec_showtech_cmd(const char* cmd)
+exec_showtech_cmd_on_thread(const char* cmd)
 {
    const char* trim_cmd = cmd;
    FILE *catFile;
@@ -115,9 +189,154 @@ exec_showtech_cmd(const char* cmd)
       return vtysh_execute(trim_cmd);
    }
 }
+/* Function       : cmd_thread_cleanup_handler
+ * Resposibility  : to clean the cmd thread , currently it will release
+                    vtysh_ovsdb_mutex
+ * Return         : NULL
+ */
+void cmd_thread_cleanup_handler(void *arg )
+{
+   //VTYSH_OVSDB_UNLOCK;
+   pthread_mutex_trylock(&vtysh_ovsdb_mutex); /* locks the mutex if thread don't
+                                                 own it */
+   pthread_mutex_unlock(&vtysh_ovsdb_mutex);
+   pthread_mutex_unlock( &cleanupMutex );
+}
 
+/* Function       : showtech_cmd_thread
+ * Resposibility  : call the function which parse and execute the command
+ *                  set the global var respectively
+ * Return         : NULL , it sets the global var gCommadFail to CMD_SUCCESS on
+ *                  success CMD_WARNING otherwise
+ */
+void *
+showtech_cmd_thread(void * cmd)
+{
+  if(pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL))
+   {
+       VLOG_ERR("show tech - unable to set cancel state of new thread");
+       return (void *) 0;
+   }
+   if(pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL))
+   {
+       VLOG_ERR("show tech - unable to set cancel type of new thread");
+       return (void *) 0;
+   }
+   pthread_cleanup_push(cmd_thread_cleanup_handler, NULL);
 
+   st_mutex_lock( &cleanupMutex );
 
+   if(exec_showtech_cmd_on_thread((char *)cmd) != CMD_SUCCESS )
+       gCommandFailed = TRUE ;
+
+   st_mutex_lock( &waitMutex );
+   if(pthread_cond_signal( &waitCond ))
+   {
+       VLOG_ERR("show tech - unable to enable signal main thread");
+   }
+   st_mutex_unlock( &waitMutex );
+   pthread_cleanup_pop(0);
+   st_mutex_unlock( &cleanupMutex );
+   return (void *) 0;
+}
+/* Function       : exec_showtech_cmd
+ * Resposibility  : Parse the cli command and execute as needed
+ *                  it is just a wrapper , it created a new thread and call the
+ *                  function which parse and execute the command
+ * Return         : CMD_SUCCESS on success CMD_WARNING otherwise
+ */
+int
+exec_showtech_cmd(const char* cmd)
+{
+    pthread_t tid;
+    struct timespec   ts;
+    int error;
+    int threadCancelled = TRUE;
+
+    gCommandFailed = FALSE;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    ts.tv_sec += CMD_MAX_TIME;
+    if(pthread_create(&tid,NULL,showtech_cmd_thread,(void *)cmd))
+    {
+        VLOG_ERR("unable to create show tech command thread");
+        return 1;
+    }
+    st_mutex_lock(&waitMutex);
+    error = pthread_cond_timedwait(&waitCond, &waitMutex,&ts);
+    st_mutex_unlock(&waitMutex);
+
+    if(gUserInterruptAlarm == TRUE)
+    {
+        st_alarm(0);
+        threadCancelled = FALSE ;
+        gUserInterruptAlarm = FALSE;
+    }
+
+    if(error == ETIMEDOUT)
+    {
+        error = pthread_cancel(tid);
+        if(error != 0)
+        {
+            VLOG_ERR("unable to cancel show tech command thread");
+            // we should be able to cancel the thread
+        }
+
+        /*wait for the cleanup function to complete */
+        st_mutex_lock( &cleanupMutex );
+        st_mutex_unlock( &cleanupMutex );
+
+        vty_out(vty,"%s---------------------------------%s"
+                ,VTY_NEWLINE,VTY_NEWLINE);
+        vty_out(vty,"Command %s Timed Out%s",(char *)cmd,VTY_NEWLINE);
+        vty_out(vty,"---------------------------------%s"
+            ,VTY_NEWLINE);
+        gThreadCancelled = TRUE;
+        gCommandFailed = TRUE ;
+    }
+    else if(gUserInterrupt)
+    {
+        if(threadCancelled)
+        {
+            pthread_cancel(tid);
+
+            /*wait for the cleanup function to complete */
+            st_mutex_lock( &cleanupMutex );
+            st_mutex_unlock( &cleanupMutex );
+
+        }
+
+        if(gUserInterruptVtyType != -1)
+        {
+            vty->type = gUserInterruptVtyType ;
+        }
+        if(gVtyOldType != VTY_FILE && gUserInterruptVtyType != VTY_FILE)
+        {
+            buffer_reset(vty->obuf);
+        }
+
+        if(threadCancelled)
+        {
+            vty_out(vty,"%s---------------------------------%s"
+                ,VTY_NEWLINE,VTY_NEWLINE);
+            vty_out(vty,"Command %s terminated due to user interrupt CTRL+ C %s",
+                   (char *)cmd,VTY_NEWLINE);
+            vty_out(vty,"---------------------------------%s"
+                ,VTY_NEWLINE);
+            gThreadCancelled = TRUE;
+        }
+    }
+    /* Need to join the thread so, that thread resources will be freed*/
+    if(pthread_join(tid, NULL))
+    {
+        VLOG_ERR("unable to join with show tech command thread");
+        return 1;
+    }
+    if(gCommandFailed || (gUserInterrupt && threadCancelled))
+    {
+        return CMD_WARNING;
+    }
+    return CMD_SUCCESS;
+}
 /* Function       : print_failed_commands
  * Resposibility  : Print the list of cli commands that failed to execute as
  *                  well as to reset the failure status.
@@ -152,12 +371,42 @@ print_failed_commands(struct feature* head)
       iter = iter->next;
    }
 }
+/* Function       : user_interrupt_handler
+ * Resposibility  : ctrl c handler for showtech
+ * Return         : NULL
+ */
+void user_interrupt_handler(int signum)
+{
+    st_mutex_lock( &waitMutex );
+    pthread_cond_signal( &waitCond );
+    st_mutex_unlock( &waitMutex );
+
+    gUserInterruptAlarm = FALSE;
+}
+/* Function       : showtech_signal_handler
+ * Resposibility  : signal handler for showtech
+ * Return         : NULL
+ */
+void
+showtech_signal_handler(int sig, siginfo_t *siginfo, void *context)
+{
+    gUserInterrupt = TRUE ;
+    //tigger the alarm only if it is not yet tiggered .
+    if(!gUserInterruptAlarm)
+    {
+        gUserInterruptAlarm = TRUE;
+        vty_out(vty,"USER INTERRUPT:Show tech will be terminated with in 10 sec %s"
+               ,VTY_NEWLINE);
+        gUserInterruptVtyType = vty->type ;
+        vty->type = VTY_FILE;
+        st_alarm(USER_INT_ALARM);
+    }
+}
 
 /* Function       : cli_show_tech
  * Resposibility  : Display Show Tech Information
  * Return         : 0 on success 1 otherwise
  */
-
 int
 cli_show_tech(const char* feature,const char* sub_feature)
 {
@@ -169,6 +418,46 @@ cli_show_tech(const char* feature,const char* sub_feature)
    time_t               showtech_start, showtech_end;
    char timebuf[32];
    double showtech_exec_time = 0.0;
+   struct sigaction oldSignalHandler,newSignalHandler,
+                oldAlarmHandler,newAlarmHandler;
+   int return_val = CMD_SUCCESS;
+
+   /* init global var */
+   gUserInterrupt      = FALSE;
+   gThreadCancelled    = FALSE;
+   gUserInterruptAlarm = FALSE;
+   gUserInterruptVtyType = -1;
+
+   /*change the signal handler */
+   memset (&oldSignalHandler, '\0', sizeof(oldSignalHandler));
+   memset (&newSignalHandler, '\0', sizeof(newSignalHandler));
+   memset (&oldAlarmHandler, '\0', sizeof(oldAlarmHandler));
+   memset (&newAlarmHandler, '\0', sizeof(newAlarmHandler));
+
+   newSignalHandler.sa_sigaction = showtech_signal_handler;
+   newSignalHandler.sa_flags = SA_SIGINFO;
+
+   newAlarmHandler.sa_handler =  user_interrupt_handler ;
+
+   if(sigaction(SIGINT, &newSignalHandler, &oldSignalHandler) != 0)
+   {
+      VLOG_ERR("Failed to change signal handler");
+      vty_out(vty, "show tech init failed %s" ,VTY_NEWLINE);
+      return CMD_WARNING;
+   }
+   if(sigaction(SIGALRM, &newAlarmHandler, &oldAlarmHandler) != 0)
+   {
+      VLOG_ERR("Failed to change Alarm handler");
+      vty_out(vty, "show tech init failed %s" ,VTY_NEWLINE);
+      if(sigaction(SIGINT, &oldSignalHandler, NULL) != 0)
+      {
+         VLOG_ERR("Failed to change signal handler to old state");
+         exit(0); //should never hit this place
+         /* we changed the CLI behavior */
+      }
+      return CMD_WARNING;
+   }
+
    /* Retrive the Show Tech Configuration Header */
    head = get_showtech_config(NULL);
    iter = head;
@@ -182,7 +471,8 @@ cli_show_tech(const char* feature,const char* sub_feature)
             " please restore the configuration file using default file.%s" \
             "These files are located in /etc/openswitch/supportability/ %s"
             ,VTY_NEWLINE,VTY_NEWLINE);
-      return CMD_WARNING;
+      return_val = CMD_WARNING;
+      goto EXIT_FUN;
    }
 
    time(&showtech_start);
@@ -246,6 +536,11 @@ cli_show_tech(const char* feature,const char* sub_feature)
                   vty_out(vty,"*********************************%s"
                         ,VTY_NEWLINE);
 
+               }
+               if(gUserInterrupt)
+               {
+                  iter_cli->command_failed = 0;
+                  goto USER_INTERRUPT;
                }
                iter_cli = iter_cli->next;
             }
@@ -313,6 +608,10 @@ cli_show_tech(const char* feature,const char* sub_feature)
                iter_cli = iter_sub->p_clicmds;
                while (iter_cli)
                {
+                  if(gUserInterrupt)
+                  {
+                     goto USER_INTERRUPT;
+                  }
                   vty_out(vty,"%s*********************************%s"
                         ,VTY_NEWLINE,VTY_NEWLINE);
                   vty_out(vty,"Command : %s%s", iter_cli->command,VTY_NEWLINE);
@@ -328,6 +627,11 @@ cli_show_tech(const char* feature,const char* sub_feature)
                            iter_cli->command,VTY_NEWLINE);
                      vty_out(vty,"*********************************%s"
                            ,VTY_NEWLINE);
+                  }
+                  if(gUserInterrupt)
+                  {
+                     iter_cli->command_failed = 0;
+                     goto USER_INTERRUPT;
                   }
                   iter_cli = iter_cli->next;
                }
@@ -402,6 +706,10 @@ cli_show_tech(const char* feature,const char* sub_feature)
                iter_cli = iter_sub->p_clicmds;
                while (iter_cli)
                {
+                  if(gUserInterrupt)
+                  {
+                     goto USER_INTERRUPT;
+                  }
                   vty_out(vty,"%s*********************************%s"
                         ,VTY_NEWLINE,VTY_NEWLINE);
                   vty_out(vty,"Command : %s%s", iter_cli->command,VTY_NEWLINE);
@@ -416,6 +724,11 @@ cli_show_tech(const char* feature,const char* sub_feature)
                      vty_out(vty,"Command %s failed to execute%s", iter_cli->command,VTY_NEWLINE);
                      vty_out(vty,"*********************************%s"
                            ,VTY_NEWLINE);
+                  }
+                  if(gUserInterrupt)
+                  {
+                     iter_cli->command_failed = 0;
+                     goto USER_INTERRUPT;
                   }
                   iter_cli = iter_cli->next;
                }
@@ -457,7 +770,8 @@ cli_show_tech(const char* feature,const char* sub_feature)
             /* Sub Feature Specific Command */
             vty_out(vty,"Sub Feature %s is not supported%s",sub_feature,VTY_NEWLINE);
          }
-         return CMD_SUCCESS;
+         return_val = CMD_SUCCESS;
+         goto EXIT_FUN;
       }
    }
 
@@ -503,8 +817,30 @@ cli_show_tech(const char* feature,const char* sub_feature)
       vty_out(vty,"Show Tech took %10.6f seconds for execution%s",
             showtech_exec_time,VTY_NEWLINE);
    }
-
-   return CMD_SUCCESS;
+   USER_INTERRUPT:
+   if(gUserInterrupt)
+   {
+      vty_out(vty,"USER INTERRUPT:Show tech terminated%s"
+           ,VTY_NEWLINE);
+   }
+   EXIT_FUN:
+   if(sigaction(SIGINT, &oldSignalHandler, NULL) != 0)
+   {
+      VLOG_ERR("Failed to change signal handler to old state");
+      exit(0); //should never hit this place
+      /* we changed the CLI behavior */
+   }
+   if(sigaction(SIGALRM, &oldAlarmHandler, NULL) != 0)
+   {
+      VLOG_ERR("Failed to change Alarm handler to old state");
+      exit(0); //should never hit this place
+      /* we changed the CLI behavior */
+   }
+   if(gThreadCancelled)
+   {
+      VLOG_ERR("thread has been cancelled");
+   }
+   return return_val;
 }
 
 
@@ -583,8 +919,8 @@ cli_show_tech_file(const char* fname,const char* feature,int force)
     char filename[CHARBUF] = "/tmp/";
     char errorbuf[CHARBUF];
     //int bckup_fd = -1;
-    int bckup_type = 0;
     char* outputbuf;
+    gVtyOldType = 0;
 
     if(fname == NULL)
     {
@@ -636,11 +972,12 @@ cli_show_tech_file(const char* fname,const char* feature,int force)
        return CMD_WARNING;
     }
 
-    bckup_type = vty->type;
+    gVtyOldType = vty->type;
     vty->type = VTY_FILE;
 
     cli_show_tech(feature,NULL);
 
+    vty->type = gVtyOldType;
     if(vty->obuf == NULL)
     {
       vty_out(vty,"Show Tech execution failed%s",VTY_NEWLINE);
@@ -648,7 +985,7 @@ cli_show_tech_file(const char* fname,const char* feature,int force)
       return CMD_WARNING;
     }
     outputbuf = buffer_getstr(vty->obuf);
-    vty->type = bckup_type;
+
     /* Reset the Buffer */
     buffer_reset(vty->obuf);
     if(outputbuf)

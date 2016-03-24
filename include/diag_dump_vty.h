@@ -32,6 +32,26 @@
 #include "diag_dump.h"
 #include "feature_mapping.h"
 
+typedef struct
+{
+    char* daemon ;
+    char **cmd_type ;
+    int cmd_argc ;
+    struct vty *vty ;
+    int fd ;
+}thread_arg;
+
+#define     FUN_MAX_TIME      60      /*in secs - maximum thread timeout limit*/
+#define     USER_INT_ALARM    10      /*in secs - user interrupt*/
+
+#ifndef FALSE
+#define     FALSE             0
+#endif
+
+#ifndef TRUE
+#define     TRUE              1
+#endif
+
 #define DIAG_DUMP_DIR         "/tmp/ops-diag"
 #define FILE_PATH_LEN_MAX          256
 #define MAX_TIME_STR_LEN           256
