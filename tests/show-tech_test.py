@@ -296,76 +296,6 @@ def checkShowTechToFile(dut01Obj):
             return True
 
 
-def checkShowTechToFileForce(dut01Obj):
-    LogOutput('info', "\n############################################")
-    LogOutput('info', "1.6 Running Show tech to File, Force option ")
-    LogOutput('info', "############################################\n")
-    # Variables
-    overallBuffer = []
-    finalReturnCode = 0
-    outputfile = str(uuid.uuid4()) + ".txt"
-
-    dut01Obj.DeviceInteract(
-        command="touch /tmp/" + outputfile)
-    # Get into vtyshell
-    returnStructure = dut01Obj.VtyshShell(enter=True)
-    overallBuffer.append(returnStructure.buffer())
-    returnCode = returnStructure.returnCode()
-    if returnCode != 0:
-        LogOutput('error', "Failed to get vtysh prompt")
-        for curLine in overallBuffer:
-            LogOutput('info', str(curLine))
-        return False
-
-    # Run Show Tech Command and store output to file without force
-    returnDevInt = dut01Obj.DeviceInteract(
-        command="show tech localfile " + outputfile)
-
-    if 'already exists' not in returnDevInt['buffer']:
-        LogOutput('error', "Force option Failed")
-        LogOutput('error', returnDevInt['buffer'])
-        dut01Obj.VtyshShell(enter=False)
-        return False
-
-    # Run Show Tech Command and store output to file with force
-    returnDevInt = dut01Obj.DeviceInteract(
-        command="show tech localfile " + outputfile + " force")
-
-    # exit the vtysh shell
-    returnStructure = dut01Obj.VtyshShell(enter=False)
-    overallBuffer.append(returnStructure.buffer())
-    returnCode = returnStructure.returnCode()
-    if returnCode != 0:
-        LogOutput('error', "Failed to exit vtysh prompt")
-        for curLine in overallBuffer:
-            LogOutput('info', str(curLine))
-        return False
-
-    finalReturnCode = returnDevInt['returnCode']
-    overallBuffer.append(returnDevInt['buffer'])
-    if finalReturnCode != 0:
-        LogOutput('error',
-                  "Failed to run Show Tech to localfile with force" +
-                  " on device " + str(dut01Obj.device))
-        return False
-    else:
-        # Read the file and check the output
-        returnDevInt = dut01Obj.DeviceInteract(
-            command="cat /tmp/" + outputfile)
-        if ("Show Tech commands executed successfully"
-           not in returnDevInt['buffer']):
-            LogOutput('error',
-                      "Test Case Failure,refer output below")
-            for outputs in overallBuffer:
-                LogOutput('info', str(outputs))
-            return False
-        else:
-            LogOutput('info',
-                      " Show Tech Feature Ran Successfully on device " +
-                      str(dut01Obj.device))
-            return True
-
-
 def checkShowTechFeatureLag(dut01Obj):
     LogOutput('info', "\n############################################")
     LogOutput('info', "1.7 Running Show tech Feature LAG Test ")
@@ -836,10 +766,6 @@ class Test_showtech:
     def test_show_tech_to_file(self):
         global dut01Obj
         assert(checkShowTechToFile(dut01Obj))
-
-    def test_show_tech_to_file_force(self):
-        global dut01Obj
-        assert(checkShowTechToFileForce(dut01Obj))
 
     # Failure Test Cases
     def test_invalid_command_failure(self):
