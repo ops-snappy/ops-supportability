@@ -15,3 +15,20 @@
     feature_desc: "System Fan"
     daemon:
        - "ops-fand"
+  -
+    feature_name: "routing"
+    feature_desc: "Routing protocols"
+    daemon:
+       - "ops-ospfd"
+       - "ops-bgpd"
+       - "ops-zebra"
+  -
+    feature_name: "ospfv2"
+    feature_desc: "Open Shortest Path First Version 2"
+    daemon:
+       - "ops-ospfd"
+  -
+    feature_name: "bgp"
+    feature_desc: "Border Gateway Protocol"
+    daemon:
+       - "ops-bgpd"
