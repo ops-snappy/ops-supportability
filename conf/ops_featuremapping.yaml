@@ -32,3 +32,13 @@
     feature_desc: "Border Gateway Protocol"
     daemon:
        - "ops-bgpd"
+  -
+    feature_name: "sub-interface"
+    feature_desc: "sub-interface"
+    daemon:
+       - "ops-portd"
+  -
+    feature_name: "loopback"
+    feature_desc: "Loopback interface"
+    daemon:
+       - "ops-portd"

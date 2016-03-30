@@ -10,6 +10,7 @@
       - "show interface mgmt"
       - "show vlan"
       - "show events"
+      - "show interface loopback"
 
 # Show Tech LLDP Feature Definition
   feature:
