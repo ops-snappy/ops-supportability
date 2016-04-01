@@ -39,7 +39,7 @@ VLOG_DEFINE_THIS_MODULE(eventlog);
 static event *ev_table = NULL;
 static char *category_table[MAX_CATEGORIES_PER_DAEMON];
 static int category_index = 0;
-
+static char *event_yaml_path = NULL;
 
 /* Function        : strcmp_with_nullcheck
 * Responsibility  : Ensure arguments are not null before calling strcmp
@@ -169,9 +169,20 @@ parse_yaml_for_category(char *category)
     if(category == NULL) {
         return -1;
     }
-    fh = fopen(EVENT_YAML_FILE, "r");
+    if(event_yaml_path == NULL) {
+        char path[512] = {0,};
+        char *envv = getenv("OPENSWITCH_INSTALL_PATH");
+        if (envv)
+            strcpy(path, envv);
+        if ((strlen(path) + strlen(EVENT_YAML_FILE) + 1) > sizeof(path))
+            return -1;
+        strcat(path, EVENT_YAML_FILE);
+        if ((event_yaml_path = strdup(path)) == NULL)
+            return -1;
+    }
+    fh = fopen(event_yaml_path, "r");
     if(fh == NULL) {
-        VLOG_ERR("YAML file open failed");
+        VLOG_ERR("YAML file (%s) open failed", event_yaml_path);
         return -1;
     }
     index = find_last_index();

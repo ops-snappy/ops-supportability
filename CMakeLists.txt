@@ -57,3 +57,7 @@ install(FILES ${INCL_DIR}/eventlog.h   ${INCL_DIR}/diag_dump.h
         DESTINATION include)
 
 install(FILES ${CMAKE_BINARY_DIR}/${SRC_DIR}/opssupportability.pc DESTINATION lib/pkgconfig)
+
+install(DIRECTORY conf/ DESTINATION etc/openswitch/supportability FILES_MATCHING PATTERN "*.yaml")
+install(DIRECTORY scripts DESTINATION usr/bin FILE_PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ OWNER_EXECUTE GROUP_EXECUTE WORLD_EXECUTE)
+install(FILES conf/ops_showtech.yaml DESTINATION etc/openswitch/supportability RENAME ops_showtech.defaults.yaml PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
