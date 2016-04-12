@@ -52,3 +52,8 @@
     feature_desc: "Network Time Protocol"
     daemon:
        - "ops_ntpd"
+  -
+    feature_name: "mstp"
+    feature_desc: "Multiple Spanning Tree Protocol"
+    daemon:
+       - "ops-stpd"
