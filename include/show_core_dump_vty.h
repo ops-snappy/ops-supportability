@@ -26,7 +26,7 @@
 
 #include "core_dump.h"
 
-#define SHOW_CORE_DUMP_STR              "Show list of core dumps present in the switch\n"
+#define SHOW_CORE_DUMP_STR              "Display core-dump list\n"
 
 
 #endif //_SHOW_CORE_DUMP_VTY_H

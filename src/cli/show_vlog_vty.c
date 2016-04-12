@@ -38,6 +38,7 @@
 #include "dynamic-string.h"
 #include "supportability_vty.h"
 #include "supportability_utils.h"
+#include <errno.h>
 
 #define LIST_ARGC                0
 #define ARGC                     2
@@ -57,7 +58,6 @@
 #define SET_REQUEST              4
 #define DAEMON_INDEX             1
 #define SEVERITY_INDEX           0
-#define FREE(X)                  if(X) { free(X); X=NULL;}
 #define MESSAGE_OVS_MATCH        "_TRANSPORT=syslog"
 
 VLOG_DEFINE_THIS_MODULE(vtysh_show_vlog_cli);
@@ -85,8 +85,8 @@ static int flag = 0;
  *                   NULL on Failure
  */
 
- static struct jsonrpc *
- vtysh_vlog_connect_to_target(const char *target)
+   static struct jsonrpc *
+vtysh_vlog_connect_to_target(const char *target)
 {
    struct jsonrpc *client=NULL;
    char *socket_name=NULL;
@@ -113,7 +113,7 @@ static int flag = 0;
          VLOG_ERR("pidfile_name is null");
          return NULL;
       }
-         /*read the pid*/
+      /*read the pid*/
       pid = read_pidfile(pidfile_name);
       if (pid < 0) {
          free(pidfile_name);
@@ -122,7 +122,7 @@ static int flag = 0;
 
       free(pidfile_name);
       socket_name = xasprintf("%s/%s.%ld.ctl", rundir , target,
-              (long int) pid);
+            (long int) pid);
       if (!socket_name) {
          VLOG_ERR("socket_name is null");
          return NULL;
@@ -135,7 +135,7 @@ static int flag = 0;
          return NULL;
       }
    }
-        /*connects to a unixctl server socket*/
+   /*connects to a unixctl server socket*/
    error = unixctl_client_create(socket_name, &client);
    if (error) {
       VLOG_ERR("cannot connect to %s,error=%d", socket_name,error);
@@ -155,9 +155,9 @@ static int flag = 0;
  * Returns        : 0 on success and non-zero on failure
  */
 
-static int
+   static int
 vtysh_vlog_interface_daemon(char *feature,char *daemon ,char **cmd_type,
-            int cmd_argc ,int request)
+      int cmd_argc ,int request)
 {
    struct jsonrpc *client = NULL;
    char *cmd_result = NULL;
@@ -172,82 +172,82 @@ vtysh_vlog_interface_daemon(char *feature,char *daemon ,char **cmd_type,
       VLOG_ERR("invalid paramter daemon or command");
       return CMD_WARNING;
    }
-     /*connect vtysh to the daemon*/
+   /*connect vtysh to the daemon*/
    client = vtysh_vlog_connect_to_target(daemon);
    if(!client) {
       return CMD_WARNING;
    }
    if(!strcmp_with_nullcheck(*cmd_type,LIST)) {
-         /*cmd_type is vlog/list and copy vlog/list to vlog_str*/
-       strncpy(vlog_str,LIST,sizeof(vlog_str));
+      /*cmd_type is vlog/list and copy vlog/list to vlog_str*/
+      strncpy(vlog_str,LIST,sizeof(vlog_str));
    }else if(!strcmp_with_nullcheck(*(cmd_type+1),SET)) {
-         /*cmd_type is vlog/set and copy vlog/set to vlog_str*/
-        strncpy(vlog_str,SET,sizeof(vlog_str));
-        opt = opt +1;
-        cmd_argcount = cmd_argc - (opt);
-        cmd_argv = cmd_argcount ? cmd_type + opt : NULL;
-    }
+      /*cmd_type is vlog/set and copy vlog/set to vlog_str*/
+      strncpy(vlog_str,SET,sizeof(vlog_str));
+      opt = opt +1;
+      cmd_argcount = cmd_argc - (opt);
+      cmd_argv = cmd_argcount ? cmd_type + opt : NULL;
+   }
 
-    rc = unixctl_client_transact(client,vlog_str,cmd_argcount,cmd_argv,
-            &cmd_result,&cmd_error);
+   rc = unixctl_client_transact(client,vlog_str,cmd_argcount,cmd_argv,
+         &cmd_result,&cmd_error);
    /*
     * unixctl_client_transact() api failure case
     * check cmd_error and rc value.
     * Nonzero rc failure case
     */
-    if(rc) {
-         VLOG_ERR("%s: transaction error:%s , rc =%d", daemon ,
-                (cmd_error?cmd_error:"error") , rc);
-         jsonrpc_close(client);
-         FREE(cmd_result);
-         FREE(cmd_error);
-         return CMD_WARNING;
-    }
-    else {
-            /* rc == 0 and cmd_result contains string is success*/
+   if(rc) {
+      VLOG_ERR("%s: transaction error:%s , rc =%d", daemon ,
+            (cmd_error?cmd_error:"error") , rc);
+      jsonrpc_close(client);
+      FREE(cmd_result);
+      FREE(cmd_error);
+      return CMD_WARNING;
+   }
+   else {
+      /* rc == 0 and cmd_result contains string is success*/
       switch(request)
       {
          case 1:  /*feature result*/
 
-                  if(flag == 0) {
-                     vty_out(vty,"========================================%s",
-                        VTY_NEWLINE);
-                     vty_out(vty,"Feature               Syslog     File%s",
-                        VTY_NEWLINE);
-                     vty_out(vty,"========================================%s",
-                        VTY_NEWLINE);
-                     vty_out(vty,"%-17.17s   %-17.17s%s",feature,
-                        (cmd_result+POSITION),VTY_NEWLINE);
-                     flag = 1;
-                  }
-                  break;
+            if(flag == 0) {
+               vty_out(vty,"========================================%s",
+                     VTY_NEWLINE);
+               vty_out(vty,"Feature               Syslog     File%s",
+                     VTY_NEWLINE);
+               vty_out(vty,"========================================%s",
+                     VTY_NEWLINE);
+               vty_out(vty,"%-17.17s   %-17.17s%s",feature,
+                     (cmd_result+POSITION),VTY_NEWLINE);
+               flag = 1;
+            }
+            break;
 
          case 2: /*daemon result*/
-                  vty_out(vty,"======================================%s",
-                        VTY_NEWLINE);
-                  vty_out(vty,"Daemon              Syslog     File%s",
-                        VTY_NEWLINE);
-                  vty_out(vty,"======================================%s",
-                        VTY_NEWLINE);
-                  vty_out(vty,"%-17.17s %-17.17s%s",daemon,
-                        (cmd_result+POSITION),VTY_NEWLINE);
-                  break;
+            vty_out(vty,"======================================%s",
+                  VTY_NEWLINE);
+            vty_out(vty,"Daemon              Syslog     File%s",
+                  VTY_NEWLINE);
+            vty_out(vty,"======================================%s",
+                  VTY_NEWLINE);
+            vty_out(vty,"%-17.17s %-17.17s%s",daemon,
+                  (cmd_result+POSITION),VTY_NEWLINE);
+            break;
 
          case 3: /*show vlog result*/
-                  /*flag == 0 means first time displays feature and deamon*/
-                  if(flag == 0) {
-                     vty_out(vty,"%-15.15s %-13.13s %-18.18s%s",feature,
-                        daemon,(cmd_result+POSITION),VTY_NEWLINE);
-                     flag = 1;
-                     break;
-                  }
-                  if(flag == 1) {
-                     /*flag == 1 means displays next daemons
-                      * of corresponding feature*/
-                     vty_out(vty,"                %-13.13s %-18.18s%s",
-                        daemon,(cmd_result+POSITION),VTY_NEWLINE);
-                  }
-                  break;
+            /*flag == 0 means first time displays feature and deamon*/
+            if(flag == 0) {
+               vty_out(vty,"%-15.15s %-13.13s %-18.18s%s",feature,
+                     daemon,(cmd_result+POSITION),VTY_NEWLINE);
+               flag = 1;
+               break;
+            }
+            if(flag == 1) {
+               /*flag == 1 means displays next daemons
+                * of corresponding feature*/
+               vty_out(vty,"                %-13.13s %-18.18s%s",
+                     daemon,(cmd_result+POSITION),VTY_NEWLINE);
+            }
+            break;
 
          case 4:  break; /*SET REQUEST only for configuration changes by using
                            show vlog config feature/daemon to obtain the changes*/
@@ -255,20 +255,20 @@ vtysh_vlog_interface_daemon(char *feature,char *daemon ,char **cmd_type,
          default: break;
 
       }
-    }
+   }
 
-    if(cmd_error) {
-         VLOG_ERR("%s: server returned error:cmd_error str:%s,rc =%d",
-                                 daemon ,cmd_error, rc);
-         jsonrpc_close(client);
-         FREE(cmd_result);
-         FREE(cmd_error);
-         return CMD_WARNING;
-    }
-    jsonrpc_close(client);
-    FREE(cmd_result);
-    FREE(cmd_error);
-    return CMD_SUCCESS;
+   if(cmd_error) {
+      VLOG_ERR("%s: server returned error:cmd_error str:%s,rc =%d",
+            daemon ,cmd_error, rc);
+      jsonrpc_close(client);
+      FREE(cmd_result);
+      FREE(cmd_error);
+      return CMD_WARNING;
+   }
+   jsonrpc_close(client);
+   FREE(cmd_result);
+   FREE(cmd_error);
+   return CMD_SUCCESS;
 }
 
 
@@ -277,7 +277,7 @@ vtysh_vlog_interface_daemon(char *feature,char *daemon ,char **cmd_type,
  * Return         :  0 on Success 1 otherwise
  */
 
-int
+   int
 cli_show_vlog_feature(const char *argv0, const char *argv1)
 {
 
@@ -315,14 +315,14 @@ cli_show_vlog_feature(const char *argv0, const char *argv1)
          }
       }
 
-         /* traverse linked list to find feature */
+      /* traverse linked list to find feature */
       for (iter=feature_head ; iter && strcmp_with_nullcheck(iter->name,argv1);
-         iter = iter->next);
+            iter = iter->next);
 
       if(iter) {
          VLOG_DBG("feature:%s",iter->name);
          iter_daemon = iter->p_daemon;
-            /*traverse all daemons*/
+         /*traverse all daemons*/
          while(iter_daemon) {
             rc = vtysh_vlog_interface_daemon(iter->name,iter_daemon->name,
                   &fun_argv,fun_argc,request);
@@ -332,7 +332,7 @@ cli_show_vlog_feature(const char *argv0, const char *argv1)
             else{
                VLOG_DBG("daemon :%s , rc:%d",iter_daemon->name,rc);
                vty_out(vty,"Not able to communicate with daemon %s%s",argv1,
-                    VTY_NEWLINE);
+                     VTY_NEWLINE);
             }
             iter_daemon = iter_daemon->next;
          }
@@ -344,19 +344,19 @@ cli_show_vlog_feature(const char *argv0, const char *argv1)
       }
    }
    if(!strcmp_with_nullcheck(argv0,DAEMON)){
-         request = DAEMON_REQUEST;
-                     /*Directly given daemon name */
-         rc = vtysh_vlog_interface_daemon(NULL,(char *)argv1,&fun_argv,
-               fun_argc,request);
+      request = DAEMON_REQUEST;
+      /*Directly given daemon name */
+      rc = vtysh_vlog_interface_daemon(NULL,(char *)argv1,&fun_argv,
+            fun_argc,request);
 
-         if (!rc) {
-             VLOG_DBG("daemon :%s , rc:%d",argv1,rc);
-         } else {
-             vty_out(vty,"Not able to communicate with daemon %s%s",argv1,
-                   VTY_NEWLINE);
-             FREE(fun_argv);
-             return CMD_WARNING;
-         }
+      if (!rc) {
+         VLOG_DBG("daemon :%s , rc:%d",argv1,rc);
+      } else {
+         vty_out(vty,"Not able to communicate with daemon %s%s",argv1,
+               VTY_NEWLINE);
+         FREE(fun_argv);
+         return CMD_WARNING;
+      }
 
       FREE(fun_argv);
       return CMD_SUCCESS;
@@ -371,7 +371,7 @@ cli_show_vlog_feature(const char *argv0, const char *argv1)
  * Return         :  0 on Success 1 otherwise
  */
 
-int
+   int
 cli_show_vlog_config_list(void)
 {
 
@@ -392,8 +392,8 @@ cli_show_vlog_config_list(void)
    vty_out(vty,"Features          Description%s",VTY_NEWLINE);
    vty_out(vty,"=============================================%s",VTY_NEWLINE);
    while(iter != NULL) {
-       vty_out(vty,"%-17.17s %-50.50s %s",iter->name,iter->desc,VTY_NEWLINE);
-       iter =iter->next;
+      vty_out(vty,"%-17.17s %-50.50s %s",iter->name,iter->desc,VTY_NEWLINE);
+      iter =iter->next;
    }
    return CMD_SUCCESS;
 }
@@ -404,7 +404,7 @@ cli_show_vlog_config_list(void)
  * Return         :  0 on Success 1 otherwise
  */
 
-int
+   int
 cli_config_vlog_set(const char* type,
       const char *fd_name ,const char *destination,
       const char *level)
@@ -420,28 +420,28 @@ cli_config_vlog_set(const char* type,
    int dest_len = strlen(destination);
    int level_len = strlen(level);
 
-      /*destination should be syslog , file or all*/
+   /*destination should be syslog , file or all*/
    if( strncasecmp(destination,"syslog",dest_len) &&
          strncasecmp(destination,"file",dest_len) &&
          strncasecmp(destination,"all",dest_len)){
-         vty_out(vty,"Invalid destination%s",VTY_NEWLINE);
-         return CMD_WARNING;
+      vty_out(vty,"Invalid destination%s",VTY_NEWLINE);
+      return CMD_WARNING;
    }
 
-      /*if destination becomes all then copy "any" to
-       * destination before passing to vlog/set*/
+   /*if destination becomes all then copy "any" to
+    * destination before passing to vlog/set*/
    if( !strncasecmp(destination,"all",dest_len)) {
-         strncpy((char *)destination,"any",dest_len);
+      strncpy((char *)destination,"any",dest_len);
    }
 
    if( strncasecmp(level,"emer",level_len) &&
-        strncasecmp(level,"err",level_len) &&
+         strncasecmp(level,"err",level_len) &&
          strncasecmp(level,"warn",level_len) &&
-          strncasecmp(level,"dbg",level_len) &&
-           strncasecmp(level,"info",level_len) &&
-            strncasecmp(level,"off",level_len)){
-         vty_out(vty,"Invalid log level %s",VTY_NEWLINE);
-         return CMD_WARNING;
+         strncasecmp(level,"dbg",level_len) &&
+         strncasecmp(level,"info",level_len) &&
+         strncasecmp(level,"off",level_len)){
+      vty_out(vty,"Invalid log level %s",VTY_NEWLINE);
+      return CMD_WARNING;
    }
 
    if( fd_name == NULL) {
@@ -481,8 +481,8 @@ cli_config_vlog_set(const char* type,
          VLOG_DBG("feature:%s",iter->name);
          iter_daemon = iter->p_daemon;
          while(iter_daemon) {
-               /*Feature name is passing as an argument to
-                * vtysh_vlog_interface_daemon*/
+            /*Feature name is passing as an argument to
+             * vtysh_vlog_interface_daemon*/
             rc = vtysh_vlog_interface_daemon(iter->name,iter_daemon->name,
                   fun_argv,fun_argc, request);
             if (!rc) {
@@ -543,12 +543,12 @@ DEFUN_NOLOCK (cli_config_set_vlog,
 /*Action routine for show vlog features list*/
 
 DEFUN_NOLOCK (cli_platform_show_vlog_list,
-   cli_platform_show_vlog_config_list_cmd,
-   "show vlog config list",
-   SHOW_STR
-   SHOW_VLOG_STR
-   SHOW_VLOG_CONFIG_STR
-   SHOW_VLOG_LIST_FEATURE)
+      cli_platform_show_vlog_config_list_cmd,
+      "show vlog config list",
+      SHOW_STR
+      SHOW_VLOG_STR
+      SHOW_VLOG_CONFIG_STR
+      SHOW_VLOG_LIST_FEATURE)
 {
    return cli_show_vlog_config_list();
 }
@@ -559,36 +559,61 @@ DEFUN_NOLOCK (cli_platform_show_vlog_list,
  * Responsibility :  Display vlogs
  * Return         :  0 on Success 1 otherwise
  */
-int
-cli_show_vlog(sd_journal *journal_handle)
+   int
+cli_show_vlog(sd_journal *journal_handle,const char *argv,int filter)
 {
    int return_value = 0;
+   int vlog_count = 0;
 
-      /* Success, Now print the Header */
+   /* Success, Now print the Header */
    vty_out(vty,"%s---------------------------------------------------%s",
-             VTY_NEWLINE,VTY_NEWLINE);
+         VTY_NEWLINE,VTY_NEWLINE);
    vty_out(vty,"%s%s","show vlog",VTY_NEWLINE);
    vty_out(vty,"-----------------------------------------------------%s",
-          VTY_NEWLINE);
+         VTY_NEWLINE);
 
-       /* For Each Log Message  */
+   /* For Each Log Message  */
    SD_JOURNAL_FOREACH(journal_handle)
    {
       const char *message_data = NULL;
       const char *ch = "|";
       const char *msg = NULL;
       char *msg_str = NULL;
+      char *check_daemon = NULL;
       char *message = NULL;
       size_t data_length = 0;
+      const char *module_name = NULL;
+      const char *module = NULL;
+      size_t module_length = 0;
+      char err_buf[BUF_SIZE] = {0};
+
       return_value = sd_journal_get_data(journal_handle
-                                       , "MESSAGE"
-                                       ,(const void **)&message_data
-                                       , &data_length);
-      /*message_data is local for iter loop , no need to free it*/
+            , "SYSLOG_IDENTIFIER"
+            ,(const void **)&module_name
+            , &module_length);
       if (return_value < 0) {
-         VLOG_ERR("Failed to read message field: %s\n", strerror(-return_value));
+         strerror_r (errno,err_buf,sizeof(err_buf));
+         VLOG_ERR("Failed to read module name field: %s\n",err_buf);
          continue;
       }
+
+      module = get_value(module_name);
+      if(module==NULL) {
+         VLOG_ERR("failed to read module-value from module field");
+      }
+
+      return_value = sd_journal_get_data(journal_handle
+            , "MESSAGE"
+            ,(const void **)&message_data
+            , &data_length);
+      /*message_data is local for iter loop , no need to free it*/
+      if (return_value < 0) {
+         strerror_r (errno,err_buf,sizeof(err_buf));
+         VLOG_ERR("Failed to read message field: %s\n",err_buf);
+         continue;
+      }
+
+      ++vlog_count;
       /*read the log message from journal*/
       msg = get_value(message_data);
       if(msg == NULL) {
@@ -597,14 +622,38 @@ cli_show_vlog(sd_journal *journal_handle)
       }
       /*duplicate the log message and search for ovs logs*/
       msg_str = xstrdup(msg);
-      if(msg_str != NULL) {
-         message = strtok(msg_str,ch);
-         if(!strcmp_with_nullcheck(message,"ovs") && (message != NULL)){
-                  vty_out(vty,"%-200.200s%s",msg,VTY_NEWLINE);
+      if(msg_str == NULL) {
+         VLOG_ERR("failed to duplicate the message");
+         continue;
+      }
+      /*show vlog daemon*/
+      if(argv != NULL){
+         check_daemon = strstr(msg_str,argv);
+         if(check_daemon != NULL) {
+            message = strtok(msg_str,ch);
+            if(!strcmp_with_nullcheck(message,"ovs") && (message != NULL)){
+               vty_out(vty,"%-200.200s%s",msg,VTY_NEWLINE);
+            }
+            FREE(msg_str);
          }
-         FREE(msg_str);
-      }else {
-         VLOG_ERR("failed to duplicate message-str from message value");
+      }
+      else{
+         /*show vlog and show vlog severity*/
+         if(msg_str != NULL) {
+            message = strtok(msg_str,ch);
+            if(!strcmp_with_nullcheck(message,"ovs") && (message != NULL)){
+               vty_out(vty,"%-25.25s|%-200.200s%s",module,msg,VTY_NEWLINE);
+            }
+            FREE(msg_str);
+         }
+      }
+   }
+   if(!vlog_count){
+      if(filter){
+         vty_out(vty,"No match for the filter provided%s",VTY_NEWLINE);
+      }
+      else {
+         vty_out(vty,"No vlog messages logged in the system%s",VTY_NEWLINE);
       }
    }
    sd_journal_close(journal_handle);
@@ -616,7 +665,7 @@ cli_show_vlog(sd_journal *journal_handle)
  *                   file & console destinations
  * Return         :  0 on Success 1 otherwise
  */
-int
+   int
 cli_show_vlog_config(void)
 {
    static int rc = 0;
@@ -660,18 +709,18 @@ cli_show_vlog_config(void)
          while(iter_daemon) {
             rc = vtysh_vlog_interface_daemon(iter->name,iter_daemon->name,
                   &fun_argv,fun_argc,request);
-             if (!rc) {
-                VLOG_DBG("daemon :%s , rc:%d",iter_daemon->name,rc);
-             }
+            if (!rc) {
+               VLOG_DBG("daemon :%s , rc:%d",iter_daemon->name,rc);
+            }
             iter_daemon = iter_daemon->next;
          }
          flag = 0;
       } else {
-               vty_out(vty,"Failed to capture vlog information:%s %s",
-                     iter->name, VTY_NEWLINE);
-               FREE(fun_argv);
-               return CMD_WARNING;
-        }
+         vty_out(vty,"Failed to capture vlog information:%s %s",
+               iter->name, VTY_NEWLINE);
+         FREE(fun_argv);
+         return CMD_WARNING;
+      }
    }
    FREE(fun_argv);
    return CMD_SUCCESS;
@@ -684,114 +733,122 @@ cli_show_vlog_config(void)
  * Return         :  0 on Success -1 otherwise
  */
 
-int
+   int
 vlog_filter(char *arg, int index, sd_journal *journal_handle)
 {
-    char buf[BUF_SIZE] = {0,};
-    int level = 0, return_value = 0;
-    if(index == DAEMON_INDEX) {
-         /*filter for daemon*/
-        snprintf(buf, BUF_SIZE, "SYSLOG_IDENTIFIER=%s", arg);
-    }
-    else if(index == SEVERITY_INDEX) {
-        level = sev_level((char*)arg);
-        if(level >= 0 && level < MAX_SEVS) {
-           /*filter for severity*/
+   char buf[BUF_SIZE] = {0,};
+   int level = 0, return_value = 0;
+   if(index == DAEMON_INDEX) {
+      /*filter for daemon*/
+      snprintf(buf, BUF_SIZE, "SYSLOG_IDENTIFIER=%s", arg);
+   }
+   else if(index == SEVERITY_INDEX) {
+      level = sev_level((char*)arg);
+      if(level >= 0 && level < MAX_SEVS) {
+         for(;level>=0;level--){
+            /*filter for severity*/
             snprintf(buf, BUF_SIZE, "PRIORITY=%d", level);
-        }
-        else {
-           return -1;
-        }
-    }
-    else {
-       return -1;
-    }
-         /*Filter by daemon name or severity*/
-    return_value = sd_journal_add_match(journal_handle,buf,0);
-    if(return_value < 0) {
-        VLOG_ERR("Failed to log the messages");
-        return -1;
-    }
-    return 0;
+            return_value = sd_journal_add_match(journal_handle,buf,0);
+            if(return_value < 0) {
+               VLOG_ERR("Failed to log the message at severity:%d",level);
+               return -1;
+            }
+            memset(buf,0,BUF_SIZE);
+         }
+         return 0;
+      }
+      else {
+         return -1;
+      }
+   }
+   else {
+      VLOG_ERR("Invalid index value");
+      return -1;
+   }
+   /*Filter by daemon name or severity*/
+   return_value = sd_journal_add_match(journal_handle,buf,0);
+   if(return_value < 0) {
+      VLOG_ERR("Failed to log the message at daemon:%s",arg);
+      return -1;
+   }
+   return 0;
 }
 /*Action routine for show vlog config features,log levels */
 
 DEFUN_NOLOCK (cli_platform_show_vlog_config,
-   cli_platform_show_vlog_config_cmd,
-   "show vlog config",
-   SHOW_STR
-   SHOW_VLOG_STR
-   SHOW_VLOG_CONFIG_STR)
+      cli_platform_show_vlog_config_cmd,
+      "show vlog config",
+      SHOW_STR
+      SHOW_VLOG_STR
+      SHOW_VLOG_CONFIG_STR)
 {
-    return cli_show_vlog_config();
+   return cli_show_vlog_config();
 }
 
 /*Action routine for show vlog config feature*/
 
 DEFUN_NOLOCK (cli_platform_showvlog_feature_list,
-   cli_platform_show_vlog_feature_cmd,
-   "show vlog config (feature | daemon) NAME",
-   SHOW_STR
-   SHOW_VLOG_STR
-   SHOW_VLOG_CONFIG_STR
-   SHOW_VLOG_FEATURE
-   SHOW_VLOG_DAEMON
-   SHOW_VLOG_NAME)
+      cli_platform_show_vlog_feature_cmd,
+      "show vlog config (feature | daemon) NAME",
+      SHOW_STR
+      SHOW_VLOG_STR
+      SHOW_VLOG_CONFIG_STR
+      SHOW_VLOG_FEATURE
+      SHOW_VLOG_DAEMON
+      SHOW_VLOG_NAME)
 {
    return cli_show_vlog_feature(argv[0],argv[1]);
 }
 
 /*Action routine for show vlog*/
 DEFUN_NOLOCK (cli_platform_show_vlog,
-   cli_platform_show_vlog_cmd,
-   "show vlog "
-   "{daemon WORD | severity (emer | alert | crit | err | warn | notice | info | debug)}",
-   SHOW_STR
-   SHOW_VLOG_STR
-   SHOW_VLOG_FILTER_SEV
-   SEVERITY_LEVEL_EMER
-   SEVERITY_LEVEL_ALERT
-   SEVERITY_LEVEL_CRIT
-   SEVERITY_LEVEL_ERR
-   SEVERITY_LEVEL_WARN
-   SEVERITY_LEVEL_NOTICE
-   SEVERITY_LEVEL_INFO
-   SEVERITY_LEVEL_DBG
-   SHOW_VLOG_FILTER_DAEMON)
+      cli_platform_show_vlog_cmd,
+      "show vlog "
+      "{daemon WORD | severity (emer | err | warn | info | debug)}",
+      SHOW_STR
+      SHOW_VLOG_STR
+      SHOW_VLOG_FILTER_SEV
+      SEVERITY_LEVEL_EMER
+      SEVERITY_LEVEL_ERR
+      SEVERITY_LEVEL_WARN
+      SEVERITY_LEVEL_INFO
+      SEVERITY_LEVEL_DBG
+      SHOW_VLOG_FILTER_DAEMON)
 {
-    sd_journal *journal_handle = NULL;
-    int i = 0, return_value = 0;
+   sd_journal *journal_handle = NULL;
+   int i = 0, return_value = 0, filter = 0;
 
-    /* Open Journal File to read Logs */
-    return_value = sd_journal_open(&journal_handle,SD_JOURNAL_LOCAL_ONLY);
+   /* Open Journal File to read Logs */
+   return_value = sd_journal_open(&journal_handle,SD_JOURNAL_LOCAL_ONLY);
 
-    if(return_value < 0) {
-        VLOG_ERR("Failed to open journal");
-        vty_out(vty,"Not able to read the log files%s",VTY_NEWLINE);
-        return CMD_WARNING;
-    }
-    /* Filter Vlogs from other Journal Logs */
-    return_value = sd_journal_add_match(journal_handle,MESSAGE_OVS_MATCH,0) ;
-    if(return_value < 0) {
-        VLOG_ERR("Failed to log");
-        vty_out(vty,"Not able to filter vlogs from  the log files%s",VTY_NEWLINE);
-        sd_journal_close(journal_handle);
-        return CMD_WARNING;
-    }
+   if(return_value < 0) {
+      VLOG_ERR("Failed to open journal");
+      vty_out(vty,"Not able to read the log files%s",VTY_NEWLINE);
+      return CMD_WARNING;
+   }
+   /* Filter Vlogs from other Journal Logs */
+   return_value = sd_journal_add_match(journal_handle,MESSAGE_OVS_MATCH,0) ;
+   if(return_value < 0) {
+      VLOG_ERR("Failed to log");
+      vty_out(vty,"Not able to filter vlogs from  the log files%s",VTY_NEWLINE);
+      sd_journal_close(journal_handle);
+      return CMD_WARNING;
+   }
 
    while(i < ARGC)
    {
-       if(argv[i] != NULL) {
-               /*Filter vlog by daemon or severity*/
-           return_value = vlog_filter((char*)argv[i], i, journal_handle);
-            if(return_value < 0) {
-               VLOG_ERR("Failed to Filter log messages");
-               vty_out(vty,"Failed to filter vlog messages%s",VTY_NEWLINE);
-               sd_journal_close(journal_handle);
-               return CMD_WARNING;
-            }
-       }
-       i++;
+      if(argv[i] != NULL) {
+         /*Filter vlog by daemon or severity*/
+         return_value = vlog_filter((char*)argv[i], i, journal_handle);
+         if(return_value < 0) {
+            VLOG_ERR("Failed to Filter log messages");
+            vty_out(vty,"Failed to filter vlog messages%s",VTY_NEWLINE);
+            sd_journal_close(journal_handle);
+            return CMD_WARNING;
+         }
+         filter = TRUE;
+      }
+      i++;
    }
-   return cli_show_vlog(journal_handle);
+   return cli_show_vlog(journal_handle,argv[1],filter);
 }

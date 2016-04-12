@@ -52,28 +52,25 @@ typedef struct
 #define     TRUE              1
 #endif
 
-#define DIAG_DUMP_DIR         "/tmp/ops-diag"
+#define DIAG_DUMP_DIR              "/tmp/ops-diag"
 #define FILE_PATH_LEN_MAX          256
 #define MAX_TIME_STR_LEN           256
 #define MAX_CLI_STR_LEN            256
 #define USER_FILE_LEN_MAX          50
 #define DIAG_CMD_LEN_MAX           50
 
-#define MAX_PID      65536
-#define MIN_PID      1
-#define MAX_PID_LEN  5
-#define MIN_PID_LEN  1
+#define MAX_PID                    65536
+#define MIN_PID                    1
+#define MAX_PID_LEN                5
+#define MIN_PID_LEN                1
 
-#define DIAG_DUMP_STR              "Show diagnostic information\n"
-#define DIAG_DUMP_LIST_STR         "Show supported features with description\n"
+#define DIAG_DUMP_STR              "Display diagnostic dump\n"
+#define DIAG_DUMP_LIST_STR         "Display supported features list\n"
+#define DIAG_DUMP_FEATURE          "Specify the feature name\n"
+#define DIAG_DUMP_FEATURE_BASIC    "Capture basic diagnostic dump for a specified feature\n"
+#define DIAG_DUMP_FEATURE_FILE     "Specify the filename to capture diagnostic dump\n"
 
-#define DIAG_DUMP_FEATURE          "Feature name  \n"
-#define DIAG_DUMP_FEATURE_BASIC    "Basic information \n"
-#define DIAG_DUMP_FEATURE_FILE     "Relative path of file\n"
 
-
-#define FREE(X)\
-        if(X) { free (X); X = NULL; }
 
 #define CLOSE(X)\
         if(X > 0)  { close(X); X = -1; }

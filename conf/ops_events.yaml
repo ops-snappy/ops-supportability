@@ -60,6 +60,8 @@ event_definitions:
   event_ID : 1001
   severity: LOG_INFO
   keys: NA
+  description:
+     'This command enables the LLDP (Link Layer Discovery Protocol) feature in the device.'
   event_description_template:
       'LLDP Enabled'
 
@@ -68,6 +70,8 @@ event_definitions:
   event_ID : 1002
   severity: LOG_INFO
   keys: NA
+  description:
+     'This command disables the LLDP (Link Layer Discovery Protocol) feature in the device.'
   event_description_template:
       'LLDP Disabled'
 
@@ -76,6 +80,8 @@ event_definitions:
   event_ID : 1003
   severity: LOG_INFO
   keys: value
+  description:
+     'This command sets the LLDP status update interval in seconds which are transmitted to neighbors.'
   event_description_template:
       'Configured LLDP tx-timer with {value}'
 
@@ -84,6 +90,8 @@ event_definitions:
   event_ID : 1004
   severity: LOG_INFO
   keys: interface
+  description:
+     'This command displays detailed information about a particular neighbor connected to a particular interface.'
   event_description_template:
       'LLDP neighbour added on {interface}'
 
@@ -92,6 +100,8 @@ event_definitions:
   event_ID : 1005
   severity: LOG_INFO
   keys: interface
+  description:
+     'This command displays information about the switchs neighbors.'
   event_description_template:
       'LLDP neighbour update on {interface}'
 
@@ -100,6 +110,8 @@ event_definitions:
   event_ID : 1006
   severity: LOG_INFO
   keys: interface
+  description:
+     'This command clears LLDP neighbor details.'
   event_description_template:
       'LLDP neighbour deleted on {interface}'
 
@@ -108,6 +120,8 @@ event_definitions:
   event_ID : 1007
   severity: LOG_INFO
   keys: value
+  description:
+     'This command sets the Management IP Address to be sent using LLDP TLV.'
   event_description_template:
       'Configured LLDP Management pattern {value}'
 
@@ -116,6 +130,8 @@ event_definitions:
   event_ID : 1008
   severity: LOG_INFO
   keys: hold
+  description:
+     'This command sets the amount of time (in seconds), a receiving device holds the information sent before discarding it.'
   event_description_template:
       'Configured LLDP tx-hold with {hold}'
 

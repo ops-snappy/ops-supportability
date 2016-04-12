@@ -36,10 +36,10 @@
 #include "jsonrpc.h"
 #include <pthread.h>
 #include <signal.h>
-
+#include "supportability_utils.h"
 #define ARGC 2
 #define  ERR_STR\
-    "Error in retrieving the mapping of feature names to daemon names"
+    "Feature to daemon mapping failed. Unable to retrieve the daemon name."
 
 VLOG_DEFINE_THIS_MODULE(vtysh_diag);
 

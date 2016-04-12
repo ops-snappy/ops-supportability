@@ -27,6 +27,7 @@
 #include <string.h>
 #include <regex.h>
 #include <ctype.h>
+#define FREE(X)                  if(X) { free(X); X=NULL;}
 
 /* compile the regular expression for the given pattern */
 int
