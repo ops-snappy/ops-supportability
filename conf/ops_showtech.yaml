@@ -9,8 +9,20 @@
       - "show system"
       - "show interface mgmt"
       - "show vlan"
+      - "show ntp status"
       - "show events"
       - "show interface loopback"
+
+# Show Tech NTP Feature Definition
+  feature:
+  -
+    feature_desc: "Network Time Protocol"
+    feature_name: ntp
+    cli_cmds:
+      - "show ntp associations"
+      - "show ntp authentication-keys"
+      - "show ntp trusted-keys"
+      - "show ntp statistics"
 
 # Show Tech LLDP Feature Definition
   feature:
