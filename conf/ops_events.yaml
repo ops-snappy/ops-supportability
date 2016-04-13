@@ -46,9 +46,14 @@ categories:
   description: 'Events related to OSPFv2'
   category_rank: 11
 
+- event_category: SFLOW
+  description: 'Events related to sFlow'
+  category_rank: 12
+
 - event_category: NTP
   description: 'Events related to NTP'
   category_rank: 13
+
 
 event_definitions:
 #- event_name: XYZ_UP
@@ -432,6 +437,226 @@ event_definitions:
     'Logs the changes in the router-id.'
   event_description_template:
       'Router-id  updated from {old} to {new}'
+
+- event_name: SFLOW_HSFLOWD_FAILURE
+  event_category: SFLOW
+  event_ID : 12001
+  severity: LOG_ERR
+  keys: operation, error
+  description:
+    'Log a failure when trying to start/stop/restart host sFlow daemon.'
+  event_description_template:
+      'Failed to {operation} host sFlow agent : {error}'
+
+- event_name: SFLOW_HSFLOWD_CFG_FILE_FAILURE
+  event_category: SFLOW
+  event_ID : 12002
+  severity: LOG_ERR
+  keys: operation, file, error
+  description:
+    'Log a failure when trying to read/write to host sFlow configuration file.'
+  event_description_template:
+      'Failed to {operation} host sFlow configuration file {file} : {error}'
+
+- event_name: SFLOW_SIM_CFG_FAILURE
+  event_category: SFLOW
+  event_ID : 12003
+  severity: LOG_ERR
+  keys: operation, bridge, error
+  description:
+    'Log a failure when trying to configure sFlow on SIM OVS.'
+  event_description_template:
+      'Failed to {operation} sFlow configuration from bridge {bridge} : {error}'
+
+- event_name: SFLOW_IPTABLES_DEL_ALL_FAILURE
+  event_category: SFLOW
+  event_ID : 12004
+  severity: LOG_ERR
+  keys: error
+  description:
+    'Log a failure when trying to delete all iptable rules added for sFlow.'
+  event_description_template:
+      'Failed to delete all iptable rules : {error}'
+
+- event_name: SFLOW_IPTABLES_FAILURE
+  event_category: SFLOW
+  event_ID : 12005
+  severity: LOG_ERR
+  keys: operation, chain, port, error
+  description:
+    'Log a failure when trying to add/delete an iptable rule for sFlow.'
+  event_description_template:
+      'Failed to {operation} {chain} iptable rules for {port} : {error}'
+
+- event_name: SFLOW_INIT_FAILURE
+  event_category: SFLOW
+  event_ID : 12006
+  severity: LOG_ERR
+  keys: NA
+  description:
+    'Logs an error if sFlow initialization fails.'
+  event_description_template:
+      'sFlow initialization failed.'
+
+- event_name: SFLOW_CALLBACK_INVALID_PKT
+  event_category: SFLOW
+  event_ID : 12007
+  severity: LOG_ERR
+  keys: NA
+  description:
+    'Logs an error for an invalid packet in sFlow callback.'
+  event_description_template:
+      'Invalid packet sent by ASIC in sFlow callback.'
+
+- event_name: SFLOW_STATS_NETDEV_FAILURE
+  event_category: SFLOW
+  event_ID : 12008
+  severity: LOG_ERR
+  keys: interface
+  description:
+    'Logs an error if an interface does not have a netdev class.'
+  event_description_template:
+      'Unable to get netdev for interface {interface}'
+
+- event_name: SFLOW_FILTER_DESC_BLANK_FAILURE
+  event_category: SFLOW
+  event_ID : 12009
+  severity: LOG_ERR
+  keys: NA
+  description:
+    'Logs an error if the descrption to create a filter is blank.'
+  event_description_template:
+      'Failed to create KNET filter as description is blank'
+
+- event_name: SFLOW_FILTER_CREATE_FAILURE
+  event_category: SFLOW
+  event_ID : 12010
+  severity: LOG_ERR
+  keys: desc
+  description:
+    'Logs an error if sFlow KNET filter creation fails.'
+  event_description_template:
+      'Failed to create KNET filter for : {desc}'
+
+- event_name: SFLOW_SAMPLED_PKT_FAILURE
+  event_category: SFLOW
+  event_ID : 12011
+  severity: LOG_ERR
+  keys: NA
+  description:
+    'Logs an error if sampled packet is null.'
+  event_description_template:
+      'The received sampled packet is null'
+
+- event_name: SFLOW_AGENT_FAILURE
+  event_category: SFLOW
+  event_ID : 12012
+  severity: LOG_ERR
+  keys: NA
+  description:
+    'Logs an error if sFlow agent is not initialized.'
+  event_description_template:
+      'The sFlow agent is not initialized'
+
+- event_name: SFLOW_SAMPLER_FAILURE
+  event_category: SFLOW
+  event_ID : 12013
+  severity: LOG_ERR
+  keys: NA
+  description:
+    'Logs an error if sFlow sampler is not initialized.'
+  event_description_template:
+      'The sFlow sampler is not initialized'
+
+- event_name: SFLOW_INVALID_PORT_FAILURE
+  event_category: SFLOW
+  event_ID : 12014
+  severity: LOG_ERR
+  keys: port
+  description:
+    'Logs an error if sFlow is enabled/disabled on an invalid port.'
+  event_description_template:
+      'Cannot enable/disable sFlow on an invalid port : {port}'
+
+- event_name: SFLOW_SAMPLER_MISSING_FAILURE
+  event_category: SFLOW
+  event_ID : 12015
+  severity: LOG_ERR
+  keys: port
+  description:
+    'Logs an error if sFlow sampler is missing on a port.'
+  event_description_template:
+      'sFlow sampler is not available on port : {port}'
+
+- event_name: SFLOW_RECEIVER_MISSING_FAILURE
+  event_category: SFLOW
+  event_ID : 12016
+  severity: LOG_ERR
+  keys: NA
+  description:
+    'Logs an error if sFlow receiver is not available.'
+  event_description_template:
+      'sFlow receiver is not available'
+
+- event_name: SFLOW_FETCH_PORT_CONFIG_FAILURE
+  event_category: SFLOW
+  event_ID : 12017
+  severity: LOG_ERR
+  keys: error
+  description:
+    'Logs an error if port configuration is not available.'
+  event_description_template:
+      'Failed to retrieve port configuration : {error}'
+
+- event_name: SFLOW_SET_SAMPLING_RATE_FAILURE
+  event_category: SFLOW
+  event_ID : 12018
+  severity: LOG_ERR
+  keys: port, error
+  description:
+    'Logs an error if setting a sampling rate on a port fails.'
+  event_description_template:
+      'Failed to set sampling rate on port {port} : {error}'
+
+- event_name: SFLOW_GET_SAMPLING_RATE_FAILURE
+  event_category: SFLOW
+  event_ID : 12019
+  severity: LOG_ERR
+  keys: port, error
+  description:
+    'Logs an error if unable to retrieve sampling rate on a port.'
+  event_description_template:
+      'Failed to get sampling rate on port {port} : {error}'
+
+- event_name: SFLOW_AGENT_IP_CONFIG_FAILURE
+  event_category: SFLOW
+  event_ID : 12020
+  severity: LOG_ERR
+  keys: ip_address
+  description:
+    'Logs an error in case of invalid agent interface IP address configuration.'
+  event_description_template:
+      'Invalid agent interface IP address : {ip_address}'
+
+- event_name: SFLOW_COLLECTOR_IP_CONFIG_FAILURE
+  event_category: SFLOW
+  event_ID : 12021
+  severity: LOG_ERR
+  keys: ip_address
+  description:
+    'Logs an error in case of invalid collector IP address configuration.'
+  event_description_template:
+      'Invalid collector IP address : {ip_address}'
+
+- event_name: SFLOW_INTF_STATISTICS_FAILURE
+  event_category: SFLOW
+  event_ID : 12022
+  severity: LOG_ERR
+  keys: unit, port, error
+  description:
+    'Logs an error if unable to retrieve interface statistics.'
+  event_description_template:
+      'Failed to get interface statistics for unit {unit} port {port} : {error}'
 
 - event_name: NTP_ASSOC
   event_category: NTP
