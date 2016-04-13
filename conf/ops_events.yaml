@@ -54,6 +54,9 @@ categories:
   description: 'Events related to NTP'
   category_rank: 13
 
+- event_category: SUPPORTABILITY
+  description: 'Events related to Supportability'
+  category_rank: 14
 
 event_definitions:
 #- event_name: XYZ_UP
@@ -687,3 +690,13 @@ event_definitions:
     'Logs NTP Authentication state changes'
   event_description_template:
     'NTP Authentication state change : {old} -> {new}'
+
+- event_name: SUPPORTABILITY_DAEMON_CRASH
+  event_category: SUPPORTABILITY
+  event_ID : 14001
+  severity: LOG_CRIT
+  keys: process, signal, timestamp
+  description:
+      'A daemon has crashed and generated core dump'
+  event_description_template:
+      '{process} crashed due to {signal},{timestamp}'

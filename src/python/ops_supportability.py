@@ -27,16 +27,25 @@
 #       - Restart the rsyslog daemon whenever the configuration changes.
 
 import argparse
-import sys
+import array
+import datetime
+import fcntl
 import filecmp
-from shutil import copyfile
-import ovs.dirs
+import glob
+import ops_eventlog
+import os
 import ovs.daemon
 import ovs.db.idl
+import ovs.dirs
+import ovs.poller
 import ovs.unixctl
 import ovs.unixctl.server
-import os
+import pyinotify
 import subprocess
+import sys
+import termios
+import xattr
+from shutil import copyfile
 from string import Template
 
 # OVS definitions.
@@ -57,6 +66,26 @@ SYSLOG_REMOTE_SEVERTIY_COLUMN = 'severity'
 # Default DB path.
 def_db = 'unix:/var/run/openvswitch/db.sock'
 
+# Signal to String mapping
+
+strsignal = ("Unknown signal", "Hangup", "Interrupt", "Quit",
+             "Illegal instruction", "Trace/breakpoint trap", "Aborted",
+             "Bus error", "Floating point exception", "Killed",
+             "User defined signal 1", "Segmentation fault",
+             "User defined signal 2", "Broken pipe", "Alarm clock",
+             "Terminated", "Stack fault", "Child exited", "Continued",
+             "Stopped (signal)", "Stopped", "Stopped (tty input)",
+             "Stopped (tty output)", "Urgent I/O condition",
+             "CPU time limit exceeded", "File size limit exceeded",
+             "Virtual timer expired", "Profiling timer expired",
+             "Window changed", "I/O possible", "Power failure",
+             "Bad system call")
+
+core_folder = '/var/lib/systemd/coredump/'
+processed_files = core_folder + 'processed_core_files.cfl'
+core_pattern = core_folder + 'core*'
+watchmanager_inst = None
+
 # TODO: Need to pull these from the build env.
 ovs_schema = '/usr/share/openvswitch/vswitch.ovsschema'
 
@@ -75,6 +104,109 @@ def unixctl_exit(conn, unused_argv, unused_aux):
     global exiting
     exiting = True
     conn.reply(None)
+
+
+# ------------------- post_crash_processing() -----------------
+# Performs post crash task
+# Currently this function performs the following action
+# 1. Send Crash Event Log
+#      Read core dump information stored in the extended attributes of the
+#      core dump file and send crash event using this information.
+def post_crash_processing(corefile):
+    try:
+        # Name of the Crashed process
+        # ToFix :: In case of python based daemon crash, this value just
+        #          has the name "python", it doesn't provide information
+        #          on which daemon crashed.  This needs to be improved.
+        process = xattr.getxattr(corefile, 'user.coredump.comm')
+
+        # Signal Number leading to crash
+        signal = int(xattr.getxattr(corefile, 'user.coredump.signal'))
+        if signal >= len(strsignal):
+            signal = 0
+
+        # Timestamp of the crash event
+        timestamp = xattr.getxattr(corefile, 'user.coredump.timestamp')
+        timestamp_human = datetime.datetime.fromtimestamp(
+            int(timestamp)
+            ).strftime('%Y-%m-%d %H:%M:%S')
+
+        ops_eventlog.log_event('SUPPORTABILITY_DAEMON_CRASH',
+                               ['process', process],
+                               ['signal', strsignal[signal]],
+                               ['timestamp', timestamp_human])
+    except:
+        vlog.dbg("Invalid core dump file found")
+
+
+# ---------------- process_coredumps() ------------------------------
+# Checks whether a new core dump is available.  If found it will
+# call post_crash_processing to perform post crash processing
+
+def process_coredumps():
+    corefile_list = glob.glob(core_pattern)
+    new_core_dump_found = False
+
+    # If the processed file is not available, then create the same
+    if os.path.exists(processed_files) is not True:
+        with open(processed_files, "w") as f:
+            pass
+
+    # Chech whether the coredump files available in the coredump folder
+    # are already processed.  In case if a file is not processed, call
+    # post_crash_processing over that file.
+    with open(processed_files, "r") as f:
+        try:
+            for corefile in corefile_list:
+                core_existing = False
+                f.seek(0)
+                for line in f:
+                    if corefile in line:
+                        core_existing = True
+                        break
+                if core_existing is False:
+                    new_core_dump_found = True
+                    post_crash_processing(corefile)
+        except:
+            vlog.info("Hit exception during coredump processing")
+
+    # Update the processed coredump list file
+    if new_core_dump_found:
+        with open(processed_files, "w") as f:
+            f.write(str(corefile_list))
+
+
+# We are using inotify to watch the core dump folder for new core dumps
+# The fd returned by inotify is polled using ovs poller for notification
+# ovs poller will return when one of the fd it polls over has become readable
+# This function checks whether inotify fd has become readable or not
+# If inotify fd is readable then it will call the process_coredumps function
+# to process the core dump present
+def crashprocessing_run():
+    global watchmanager_inst
+    watch_fd = watchmanager_inst.get_fd()
+    sizebuffer = array.array('i', [0])
+
+    if fcntl.ioctl(watch_fd, termios.FIONREAD, sizebuffer, 1) == -1:
+        return
+
+    bytes_available = sizebuffer[0]
+    if bytes_available > 0:
+        vlog.dbg("Core Dump file available "+str(bytes_available))
+        os.read(watch_fd, bytes_available)
+        process_coredumps()
+
+
+# Watches core dump folder for new core dump files
+# Uses INotify system call to monitor the core dump folder
+# INotify returns a fd which could be polled for notification
+# Uses the ovs poller and adds the fd for polling.
+# Currently the poller polls over ovsdb, unixctl and inotify
+def crashprocessing_poll(poller):
+    global watchmanager_inst
+
+    watch_fd = watchmanager_inst.get_fd()
+    poller.fd_wait(watch_fd, ovs.poller.POLLIN)
 
 
 # ---------------- supportability_run_command() ------------
@@ -106,7 +238,7 @@ def supportability_init(remote):
     '''
 
     global idl
-
+    global watchmanager_inst
     schema_helper = ovs.db.idl.SchemaHelper(location=ovs_schema)
     schema_helper.register_columns(SYSTEM_TABLE,
                                    [SYSTEM_SYSLOG_REMOTES_COLUMN])
@@ -118,6 +250,16 @@ def supportability_init(remote):
                                     SYSLOG_REMOTE_SEVERTIY_COLUMN])
 
     idl = ovs.db.idl.Idl(remote, schema_helper)
+
+    ops_eventlog.event_log_init('SUPPORTABILITY')
+
+    watchmanager_inst = pyinotify.WatchManager()
+
+    watchmanager_inst.add_watch(core_folder,
+                                pyinotify.IN_MOVED_TO)
+
+    # Check boot time core dumps
+    process_coredumps()
 
 
 # ------------------ supportability_reconfigure() ----------------
@@ -249,7 +391,6 @@ def main():
 
     # Sequence number when we last processed the db.
     seqno = idl.change_seqno
-
     exiting = False
     while not exiting:
 
@@ -259,6 +400,8 @@ def main():
 
         supportability_wait()
 
+        crashprocessing_run()
+
         if exiting:
             break
 
@@ -266,6 +409,7 @@ def main():
             poller = ovs.poller.Poller()
             unixctl_server.wait(poller)
             idl.wait(poller)
+            crashprocessing_poll(poller)
             poller.block()
 
     # Daemon Exit.
