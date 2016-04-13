@@ -10,6 +10,7 @@
     feature_desc: "Link Aggregation Control Protocol"
     daemon:
       - "ops-lacpd"
+      - "ops-portd"
   -
     feature_name: "fand"
     feature_desc: "System Fan"
