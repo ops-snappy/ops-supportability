@@ -653,6 +653,7 @@ DEFUN (vtysh_config_syslog_prot_svrt_noport,
 DEFUN (no_vtysh_config_syslog_basic,
        no_vtysh_config_syslog_basic_cmd,
        "no logging (A.B.C.D | X:X::X:X | WORD)",
+       NO_STR
        LOGGING_STR
        HOST_IPv4
        HOST_IPv6
@@ -665,6 +666,7 @@ DEFUN (no_vtysh_config_syslog_basic,
 DEFUN (no_vtysh_config_syslog_udp,
        no_vtysh_config_syslog_udp_cmd,
        "no logging (A.B.C.D | X:X::X:X | WORD) udp [<1-65535>]",
+       NO_STR
        LOGGING_STR
        HOST_IPv4
        HOST_IPv6
@@ -688,6 +690,7 @@ DEFUN (no_vtysh_config_syslog_udp,
 DEFUN (no_vtysh_config_syslog_tcp,
        no_vtysh_config_syslog_tcp_cmd,
        "no logging (A.B.C.D | X:X::X:X | WORD) tcp [<1-65535>]",
+       NO_STR
        LOGGING_STR
        HOST_IPv4
        HOST_IPv6
@@ -711,6 +714,7 @@ DEFUN (no_vtysh_config_syslog_svrt,
        no_vtysh_config_syslog_svrt_cmd,
        "no logging (A.B.C.D | X:X::X:X | WORD)"
        " severity (debug|info|notice|warning|err|crit|alert|emerg)",
+       NO_STR
        LOGGING_STR
        HOST_IPv4
        HOST_IPv6
@@ -733,6 +737,7 @@ DEFUN (no_vtysh_config_syslog_udp_svrt,
        no_vtysh_config_syslog_udp_svrt_cmd,
        "no logging (A.B.C.D | X:X::X:X | WORD) udp [<1-65535>]"
        " severity (debug|info|notice|warning|err|crit|alert|emerg)",
+       NO_STR
        LOGGING_STR
        HOST_IPv4
        HOST_IPv6
@@ -762,6 +767,7 @@ DEFUN (no_vtysh_config_syslog_tcp_svrt,
        no_vtysh_config_syslog_tcp_svrt_cmd,
        "no logging (A.B.C.D | X:X::X:X | WORD) tcp [<1-65535>]"
        " severity (debug|info|notice|warning|err|crit|alert|emerg)",
+       NO_STR
        LOGGING_STR
        HOST_IPv4
        HOST_IPv6
@@ -791,6 +797,7 @@ DEFUN (no_vtysh_config_syslog_prot_svrt_noport,
        no_vtysh_config_syslog_prot_svrt_noport_cmd,
        "no logging (A.B.C.D | X:X::X:X | WORD) (udp|tcp)"
        " severity (debug|info|notice|warning|err|crit|alert|emerg)",
+       NO_STR
        LOGGING_STR
        HOST_IPv4
        HOST_IPv6
