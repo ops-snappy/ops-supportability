@@ -12,7 +12,6 @@
       - "show vlan"
       - "show ntp status"
       - "show events"
-      - "show interface loopback"
 
 # Show Tech NTP Feature Definition
   feature:
@@ -195,3 +194,18 @@
       - "show ip ospf interface"
       - "show ip ospf neighbor"
       - "show ip ospf route"
+
+# Show Tech Unicast Routing Feature Definition
+  feature:
+  -
+    feature_desc: "Unicast Routing Information"
+    feature_name: ucast-routing
+    cli_cmds:
+      - "show ip route"
+      - "show ipv6 route"
+      - "show rib"
+      - "show ip interface"
+      - "show ipv6 interface"
+      - "show arp"
+      - "show ipv6 neighbors"
+      - "show interface loopback"

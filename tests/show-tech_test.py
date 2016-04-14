@@ -892,6 +892,75 @@ def checkShowTechFeatureSFLOW(dut01Obj):
                       str(dut01Obj.device))
             return True
 
+def checkShowTechFeatureUnicastRouting(dut01Obj):
+    LogOutput('info', "\n##################################################")
+    LogOutput('info', "7.0 Running Show tech Feature Unicast Routing Test ")
+    LogOutput('info', "##################################################\n")
+    # Variables
+    overallBuffer = []
+    finalReturnCode = 0
+
+    # Get into vtyshelll
+    returnStructure = dut01Obj.VtyshShell(enter=True)
+    overallBuffer.append(returnStructure.buffer())
+    returnCode = returnStructure.returnCode()
+    if returnCode != 0:
+        LogOutput('error', "Failed to get vtysh prompt")
+        for curLine in overallBuffer:
+            LogOutput('info', str(curLine))
+        return False
+
+    # Run Show Tech UCast Routing Command
+    returnDevInt = dut01Obj.DeviceInteract(command="show tech ucast-routing")
+
+    # exit the vtysh shell
+    returnStructure = dut01Obj.VtyshShell(enter=False)
+    overallBuffer.append(returnStructure.buffer())
+    returnCode = returnStructure.returnCode()
+    if returnCode != 0:
+        LogOutput('error', "Failed to exit vtysh prompt")
+        for curLine in overallBuffer:
+            LogOutput('info', str(curLine))
+        return False
+
+    # Verify if the expected cli commands for u-cast routing is seen in the
+    # output buffer
+    expected_commands = ['Command : show ip route',
+                         'Command : show ipv6 route',
+                         'Command : show rib',
+                         'Command : show ip interface',
+                         'Command : show ipv6 interface',
+                         'Command : show arp',
+                         'Command : show ipv6 neighbors',
+                         'Command : show interface loopback']
+
+    for command in expected_commands:
+        if command not in returnDevInt['buffer']:
+            LogOutput('error',
+                      "Failed to run 'show tech ucast-routing' " +
+                      " cli commands on device " + str(dut01Obj.device))
+            return False
+
+    finalReturnCode = returnDevInt['returnCode']
+    overallBuffer.append(returnDevInt['buffer'])
+    if finalReturnCode != 0:
+        LogOutput('error',
+                  "Failed to run 'show tech ucast-routing' " +
+                  " on device " + str(dut01Obj.device))
+        return False
+    else:
+        if ("Show Tech commands executed successfully"
+           not in returnDevInt['buffer']):
+            LogOutput('error',
+                      "Test Case Failure,refer output below")
+            for outputs in overallBuffer:
+                LogOutput('info', str(outputs))
+            return False
+        else:
+            LogOutput('info',
+                      " Show Tech Feature Unicast Routing Ran Successfully"
+                      "on device " + str(dut01Obj.device))
+            return True
 
 class Test_showtech:
 
@@ -966,6 +1035,10 @@ class Test_showtech:
     def test_show_tech_version(self):
         global dut01Obj
         assert(TestShowTechFeatureVersion(dut01Obj))
+
+    def test_show_tech_feature_unicast_routing(self):
+        global dut01Obj
+        assert(checkShowTechFeatureUnicastRouting(dut01Obj))
 
     # Teardown Class
     def teardown_class(cls):
