@@ -42,3 +42,8 @@
     feature_desc: "Loopback interface"
     daemon:
        - "ops-portd"
+  -
+    feature_name: "rest"
+    feature_desc: "REST interface"
+    daemon:
+       - "restd"
