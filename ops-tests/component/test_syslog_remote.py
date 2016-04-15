@@ -27,7 +27,7 @@ List of Test Cases
 from __future__ import unicode_literals, absolute_import
 from __future__ import print_function, division
 from time import sleep
-from .helpers import wait_until_interface_up
+# from .helpers import wait_until_interface_up
 # from ipdb import set_trace
 
 TOPOLOGY = """
@@ -67,6 +67,30 @@ switch_config_status = 0
 host_config_status = 0
 
 
+def _wait_until_interface_up(switch, portlbl, timeout=30, polling_frequency=1):
+    """
+    Wait until the interface, as mapped by the given portlbl, is marked as up.
+
+    :param switch: The switch node.
+    :param str portlbl: Port label that is mapped to the interfaces.
+    :param int timeout: Number of seconds to wait.
+    :param int polling_frequency: Frequency of the polling.
+    :return: None if interface is brought-up. If not, an assertion is raised.
+    """
+    for i in range(timeout):
+        status = switch.libs.vtysh.show_interface(portlbl)
+        if status['interface_state'] == 'up':
+            break
+        sleep(polling_frequency)
+    else:
+        assert False, (
+            'Interface {}:{} never brought-up after '
+            'waiting for {} seconds'.format(
+                switch.identifier, portlbl, timeout
+            )
+        )
+
+
 def _switchconf(sw1, sw_configs):
     """
     Helper function to configure the switch
@@ -87,7 +111,7 @@ def _switchconf(sw1, sw_configs):
 
         # Wait until interfaces are up
         for swcfg in sw_configs:
-            wait_until_interface_up(sw1, swcfg['int'])
+            _wait_until_interface_up(sw1, swcfg['int'])
 
 
 def _remote_syslog_test(remotes_config):
@@ -98,10 +122,12 @@ def _remote_syslog_test(remotes_config):
     for conn in remotes_config:
 
         if(conn['trans'] == 'udp'):
-            script = "../../../test//syslog_udp_server.py"
+            script = ("../../../code_under_test/ops-supportability"
+                      "//syslog_udp_server.py")
             execscript = "/tmp/syslog_udp_server.py"
         elif(conn['trans'] == 'tcp'):
-            script = "../../../test//syslog_tcp_server.py"
+            script = ("../../../code_under_test/ops-supportability"
+                      "//syslog_tcp_server.py")
             execscript = "/tmp/syslog_tcp_server.py"
 
         conn['hs']('rm -f /tmp/syslog_out.sb')
