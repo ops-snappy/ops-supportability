@@ -159,6 +159,7 @@
     feature_name: ecmp
     cli_cmds:
       - "show ip ecmp"
+
 # Show Tech MSTP Feature Definition
   feature:
   -
@@ -183,3 +184,14 @@
     feature_name: version
     cli_cmds:
       - "show version detail"
+
+# Show ospf
+  feature:
+  -
+    feature_desc: "Open Shortest Path First version 2 Protocol"
+    feature_name: ospfv2
+    cli_cmds:
+      - "show ip ospf"
+      - "show ip ospf interface"
+      - "show ip ospf neighbor"
+      - "show ip ospf route"
