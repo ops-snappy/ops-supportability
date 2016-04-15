@@ -62,6 +62,10 @@ categories:
   description: 'Events related to LACP'
   category_rank: 15
 
+- event_category: LAG
+  description: 'Events related to LAG'
+  category_rank: 16
+
 event_definitions:
 #- event_name: XYZ_UP
 #  event_category: ABC
@@ -792,3 +796,83 @@ event_definitions:
   severity: LOG_ERR
   keys: lag_id
   event_description_template: 'Failed to create LAG {lag_id}'
+
+- event_name: TRUNK_SET_SUCCEEDS
+  event_category: LAG
+  event_ID : 16001
+  severity: LOG_DEBUG
+  keys: unit, lag_id
+  description:
+    'Logs the creation of trunk.'
+  event_description_template:
+      'Trunk set succeeds unit {unit} lag_id {lag_id}'
+
+- event_name: LAG_CREATION_FAILED
+  event_category: LAG
+  event_ID : 16002
+  severity: LOG_ERR
+  keys: unit, LAGID, rc, error
+  description:
+    'Logs the failure of trunk creation.'
+  event_description_template:
+      'Lag creation failed unit {unit} lag_id {lag_id} rc {rc} error {error}'
+
+- event_name: DESTROY_LAG_FAILED
+  event_category: LAG
+  event_ID : 16003
+  severity: LOG_ERR
+  keys: unit, LAGID, rc, error
+  description:
+    'Logs the failure of trunk destroy.'
+  event_description_template:
+      'Destroy lag failed on unit {unit} lag_id {lag_id} rc {rc} error {error}'
+
+- event_name: TRUNK_MEMBER_ADD_SUCCEEDS
+  event_category: LAG
+  event_ID : 16004
+  severity: LOG_DEBUG
+  keys: unit, hw_port, tid
+  description:
+    'Logs the addition of port to trunk.'
+  event_description_template:
+      'Trunk member add port succeeds on unit {unit} hw_port {hw_port} tid {tid}'
+
+- event_name: TRUNK_PORT_ATTACH_ERROR
+  event_category: LAG
+  event_ID : 16005
+  severity: LOG_ERR
+  keys: hw_port, tid, rc, error
+  description:
+    'Logs the failure of addition of port to trunk.'
+  event_description_template:
+      'Trunk port attach error on hw_port {hw_port} tid {tid} rc {rc} {error}'
+
+- event_name: FAILED_TO_SET_EGRESS_ENABLE
+  event_category: LAG
+  event_ID : 16006
+  severity: LOG_ERR
+  keys: hw_port, tid, rc, error
+  description:
+    'Logs the failure to set egress enable.'
+  event_description_template:
+      'Failed to set egress enable on hw_port {hw_port} tid {tid} rc {rc} error {error}'
+
+- event_name: FAILED_TO_DELETE_PORT
+  event_category: LAG
+  event_ID : 16007
+  severity: LOG_ERR
+  keys: hw_port, tid, rc, error
+  description:
+    'Logs the failure to delete a port.'
+  event_description_template:
+      'Failed to delete hw_port {hw_port} from tid {tid} rc {rc} error {error}'
+
+- event_name: TRUNK_PSC_SET_FAILED
+  event_category: LAG
+  event_ID : 16008
+  severity: LOG_ERR
+  keys: unit, lag_id, psc, rc, error
+  description:
+    'Logs the failure to set port selection criteria.'
+  event_description_template:
+      'Trunk psc set failed on unit {unit} lag_id {lag_id} psc {psc} rc {rc} error {error}'
