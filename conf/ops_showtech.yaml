@@ -175,3 +175,11 @@
     feature_name: sflow
     cli_cmds:
        - "show sflow"
+
+# Show Tech Version Feature Definition
+  feature:
+  -
+    feature_desc: "Image versioning scheme"
+    feature_name: version
+    cli_cmds:
+      - "show version detail"
