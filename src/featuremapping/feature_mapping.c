@@ -118,7 +118,7 @@ feature_mapping_add_feature_desc(
   if(feature_desc == NULL) {
      return 1;
   } else {
-  element->desc = strndup(feature_desc,FEATURE_SIZE);
+  element->desc = strndup(feature_desc,FEATURE_DESC_SIZE);
   }
   return 0;
 }
