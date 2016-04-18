@@ -47,3 +47,8 @@
     feature_desc: "REST interface"
     daemon:
        - "restd"
+  -
+    feature_name: "ntp"
+    feature_desc: "Network Time Protocol"
+    daemon:
+       - "ops_ntpd"
