@@ -120,13 +120,16 @@ def _switchconf(sw1, sw_configs):
     """
     global switch_config_status
     if switch_config_status == 0:
-        switch_config_status = 1
+        # switch_config_status = 1
 
-        for swcfg in sw_configs:
-            # Configure IP and bring UP switch  interfaces
-            with sw1.libs.vtysh.ConfigInterface(swcfg['int']) as ctx:
-                ctx.ip_address(swcfg['ip'])
-                ctx.no_shutdown()
+        try:
+            for swcfg in sw_configs:
+                # Configure IP and bring UP switch  interfaces
+                with sw1.libs.vtysh.ConfigInterface(swcfg['int']) as ctx:
+                    ctx.ip_address(swcfg['ip'])
+                    ctx.no_shutdown()
+        except:
+            print('Exception hit when tried to assign ip address to switch')
 
         # Wait until interfaces are up
         for swcfg in sw_configs:
@@ -146,7 +149,7 @@ def _remote_syslog_test(remotes_config):
             script = (script_loc + "/syslog_udp_server.py")
             execscript = "/tmp/syslog_udp_server.py"
         elif(conn['trans'] == 'tcp'):
-            script = (script_loc + "//syslog_tcp_server.py")
+            script = (script_loc + "/syslog_tcp_server.py")
             execscript = "/tmp/syslog_tcp_server.py"
 
         conn['hs']('rm -f /tmp/syslog_out.sb')
@@ -163,7 +166,6 @@ def _remote_syslog_test(remotes_config):
             conn['rmt_addr'] + " " + conn['port'] + "&"
         )
         print(conn['hs']('ps -aux'))
-
         with conn['sw'].libs.vtysh.Configure() as ctx:
             ctx.logging(remote_host=conn['rmt_addr'],
                         transport=" " + conn['trans'] + " " + conn["port"])
@@ -194,7 +196,7 @@ def _remote_syslog_test(remotes_config):
             return True
 
 
-def _test_udp_connection(topology):
+def test_udp_connection(topology):
     """
     Verifies syslog messages transmission to 4 different udp syslog
     remote servers
@@ -280,7 +282,7 @@ def _test_udp_connection(topology):
         assert False
 
 
-def _test_tcp_connection(topology):
+def test_tcp_connection(topology):
     """
     Verifies syslog messages transmission to 4 different tcp syslog
     remote servers
@@ -368,7 +370,7 @@ def _test_tcp_connection(topology):
         assert False
 
 
-def _test_tcp_udp_combination(topology):
+def test_tcp_udp_combination(topology):
     """
     Verifies syslog messages transmission to 4 different syslog with
     combination of tcp and upd based servers
