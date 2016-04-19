@@ -18,7 +18,7 @@
  *
  * File: core_dump.h
  *
- * Purpose: To Run Show Core Dump command from CLI.
+ * Purpose: To Run Copy, Show Core Dump command from CLI.
  */
 
 #ifndef _CORE_DUMP_VTY_H
@@ -27,35 +27,42 @@
 #include "supportability_utils.h"
 
 
-#define GB_PATTERN \
-   "%s/{,*/}*.[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].[0-9][0-9][0-9]" \
-"[0-9][0-9][0-9].core.tar.gz"
 
-#define CORE_FILE_PATTERN "([a-zA-Z0-9_\\-]+)\\.([0-9]{1,3})\\.([0-9]" \
-   "{8})\\.([0-9]{6})\\.core\\.tar\\.gz"
-
+#define GB_PATTERN    "%s/core*.xz"
+#define CORE_FILE_PATTERN "core.*\\.xz"
 #define KERN_GB_PATTERN \
-   "%s/vmcore.[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].[0-9][0-9][0-9]" \
+   "vmcore.[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].[0-9][0-9][0-9]" \
 "[0-9][0-9][0-9].tar.gz"
+
+/* systemd uses hardcoded path to store core files
+e.g.     "/var/lib/systemd/coredump\
+/core.vtysh.0.68b62225067c4523af7d4d38e723da39.682.1459547856000000.xz" */
+
+#define DAEMON_CORE_PATH        "\\/var\\/diagnostics\\/coredump"
+#define KERNEL_CORE_PATH        "\\/var\\/diagnostics\\/coredump"
+
 
 #define KERN_CORE_FILE_PATTERN "([0-9]{8})\\.([0-9]{6})\\.tar\\.gz"
 
-#define CORE_DUMP_CONFIG      "/etc/ops_corefile.conf"
-#define KERNEL_DUMP_CONFIG    "/etc/kdump.conf"
 #define DATE_STR_SIZE         11
 #define TIME_STR_SIZE         9
+#define SIGNAL_STR_SIZE       3
 #define INDEX_STR_SIZE        4
 #define SRC_DATE_STR_LEN      8
 #define SRC_TIME_STR_LEN      6
-#define FILENAME_SIZE         256
+#define SRC_SIGNAL_STR_LEN    2
+#define DEAMON_NAME_SIZE      256
 #define REGEX_COMP_ERR        1000
 #define CORE_LOC_CONFIG       300
 #define CORE_FILE_NAME        600
-
-/* we have 4 information to extract from file name.
- *  * They are  daemonname,time,date and index. Together with the full match
- *   * the number of groups become 5*/
-#define TOTAL_INFO  5
+#define MIN_SIZE              6
+#define INSTANCE_ID_SIZE      8
+#define SIZE_DATE_AND_TIME    20
+/*  we have 5 information to extract from file name.
+ *  They are  daemonname,time,date, index and signal.
+ *  Together with the full match
+ *  the number of groups become 6*/
+#define TOTAL_INFO             6
 
 enum
 {
@@ -64,20 +71,23 @@ enum
 };
 
 struct core_dump_data {
-   char daemon_name[FILENAME_SIZE];
-   char crash_index[INDEX_STR_SIZE];
-   char crash_date[DATE_STR_SIZE];
-   char crash_time[TIME_STR_SIZE];
+   char daemon_name[DEAMON_NAME_SIZE+1];
+   char crash_date[DATE_STR_SIZE+1];
+   char crash_time[TIME_STR_SIZE+1];
+   char crash_signal[SIGNAL_STR_SIZE+1];
+   char crash_instance_id[INSTANCE_ID_SIZE+1];
 };
 
 int
 extract_info (
-      regex_t * regexst, const char * filename,struct core_dump_data* cd,int type);
+      regex_t * regexst, const char * filename,
+      struct core_dump_data* cd,int type);
 
 int
-get_file_list(const char* filepath,int type,
-      glob_t* globbuf, const char* globpattern );
+get_file_list(int type, glob_t* globbuf, const char* globpattern ,
+        const char *daemon, const char* instance_id );
 
-
+int
+validate_cli_args(const char * arg , const char * regex);
 
 #endif //_CORE_DUMP_VTY_H

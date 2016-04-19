@@ -64,8 +64,6 @@ extern struct cmd_element cli_platform_show_vlog_cmd;
 extern struct cmd_element cli_platform_show_vlog_config_list_cmd;
 extern struct cmd_element cli_platform_show_vlog_feature_cmd;
 extern struct cmd_element cli_config_vlog_set_cmd;
-
-
 /* Syslog Command */
 
 extern struct cmd_element vtysh_config_syslog_basic_cmd;
@@ -87,4 +85,10 @@ extern struct cmd_element no_vtysh_config_syslog_prot_svrt_noport_cmd;
 extern struct cmd_element vtysh_config_no_syslog_cmd;
 
 extern void syslog_ovsdb_init(void);
+extern struct cmd_element cli_platform_copy_core_dump_tftp_cmd;
+extern struct cmd_element cli_platform_copy_core_dump_sftp_cmd;
+extern struct cmd_element cli_platform_copy_core_dump_kernel_tftp_cmd;
+extern struct cmd_element cli_platform_copy_core_dump_kernel_sftp_cmd;
+extern struct cmd_element cli_platform_copy_core_dump_tftp_cmd_inst;
+extern struct cmd_element cli_platform_copy_core_dump_sftp_cmd_inst;
 #endif /* _SUPPORTABILITY_VTY_H_ */
