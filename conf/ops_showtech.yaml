@@ -9,8 +9,20 @@
       - "show system"
       - "show interface mgmt"
       - "show vlan"
+      - "show ntp status"
       - "show events"
       - "show interface loopback"
+
+# Show Tech NTP Feature Definition
+  feature:
+  -
+    feature_desc: "Network Time Protocol"
+    feature_name: ntp
+    cli_cmds:
+      - "show ntp associations"
+      - "show ntp authentication-keys"
+      - "show ntp trusted-keys"
+      - "show ntp statistics"
 
 # Show Tech LLDP Feature Definition
   feature:
@@ -26,8 +38,132 @@
   feature:
   -
     feature_desc: "Link Aggregation Protocol"
-    feature_name: LAG
+    feature_name: lag
     cli_cmds:
       - "show lacp configuration"
       - "show lacp aggregates"
       - "show lacp interfaces"
+
+# Show Tech QoS Feature Definition
+  feature:
+  -
+    feature_desc: "Quality of Service"
+    feature_name: qos
+    cli_cmds:
+      - show qos trust
+      - show qos cos-map
+      - show qos dscp-map
+      - show qos queue-profile
+      - show qos schedule-profile
+
+    ovsdb:
+      -
+        table:
+          -
+            table_name: system
+            col_names:
+              - qos_config
+              - qos_status
+              - qos_dscp_map_entries
+              - qos_cos_map_entries
+              - q_profile
+              - qos
+      -
+        table:
+          -
+            table_name: port
+            col_names:
+              - qos_config
+              - q_profile
+              - qos
+              - qos_status
+      -
+        table:
+          -
+            table_name: interface
+            col_names:
+              - queue_tx_bytes
+              - queue_tx_packets
+              - queue_tx_errors
+      -
+        table:
+          -
+            table_name: QoS_DSCP_Map_Entry
+            col_names:
+              - code_point
+              - local_priority
+              - priority_code_point
+              - color
+              - description
+              - hw_defaults
+              - other_config
+              - external_ids
+      -
+        table:
+          -
+            table_name: QoS_COS_Map_Entry
+            col_names:
+              - code_point
+              - local_priority
+              - color
+              - description
+              - hw_defaults
+              - other_config
+              - external_ids
+      -
+        table:
+          -
+            table_name: Q_Profile
+            col_names:
+              - name
+              - q_profile_entries
+              - hw_default
+              - other_config
+              - external_ids
+      -
+        table:
+          -
+            table_name: Q_Profile_Entry
+            col_names:
+              - local_priorities
+              - description
+              - hw_default
+              - other_config
+              - external_ids
+      -
+        table:
+          -
+            table_name: QoS
+            col_names:
+              - name
+              - queues
+              - hw_default
+              - other_config
+              - external_ids
+      -
+        table:
+          -
+            table_name: Queue
+            col_names:
+              - algorithm
+              - weight
+              - hw_default
+              - other_config
+              - external_ids
+
+# Show Tech ECMP Feature Definition
+  feature:
+  -
+    feature_desc: "IP ECMP Load Balancing"
+    feature_name: ecmp
+    cli_cmds:
+      - "show ip ecmp"
+# Show Tech MSTP Feature Definition
+  feature:
+  -
+    feature_desc: "Multiple Spanning Tree Protocol"
+    feature_name: mstp
+    cli_cmds:
+      - "show spanning-tree detail"
+      - "show spanning-tree mst-config"
+      - "show spanning-tree mst"

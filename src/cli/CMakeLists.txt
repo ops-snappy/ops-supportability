@@ -47,6 +47,8 @@ set (SOURCES_CLI ${PROJECT_SOURCE_DIR}/show_tech_vty.c
                  ${PROJECT_SOURCE_DIR}/core_dump.c
                  ${PROJECT_SOURCE_DIR}/diag_dump_vty.c
                  ${PROJECT_SOURCE_DIR}/show_vlog_vty.c
+                 ${PROJECT_SOURCE_DIR}/syslog_vty.c
+                 ${PROJECT_SOURCE_DIR}/vtysh_ovsdb_syslog_context.c
                  ${PROJECT_SOURCE_DIR}/../featuremapping/feature_mapping.c
                  ${PROJECT_SOURCE_DIR}/supportability_vty.c
                  ${PROJECT_SOURCE_DIR}/../supportability_utils.c

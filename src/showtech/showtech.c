@@ -658,7 +658,7 @@ parse_showtech_config (const char* config_file)
   if (!yaml_parser_parse (&parser, &event))
   {
     VLOG_ERR ("Parser error %d\n", parser.error);
-    goto cleanup;
+    goto CLEAN_UP;
   }
 
   while (event.type != YAML_STREAM_END_EVENT)
@@ -681,7 +681,7 @@ parse_showtech_config (const char* config_file)
                 VLOG_ERR ("Parsing error while adding new feature %s",
                   (const char*) event.data.scalar.value);
                 free_show_tech_config ();
-                goto cleanup;
+                goto CLEAN_UP;
               }
               add_feature_name (curr_feature,
                 (const char*) event.data.scalar.value);
@@ -695,7 +695,7 @@ parse_showtech_config (const char* config_file)
                   "Parsing error while adding new feature description : %s",
                   (const char*) event.data.scalar.value);
                 free_show_tech_config ();
-                goto cleanup;
+                goto CLEAN_UP;
               }
 
               add_feature_desc (curr_feature,
@@ -710,7 +710,7 @@ parse_showtech_config (const char* config_file)
                   "Parsing error while adding new sub feature %s",
                   (const char*) event.data.scalar.value);
                 free_show_tech_config ();
-                goto cleanup;
+                goto CLEAN_UP;
               }
 
               add_subfeature_name (
@@ -726,7 +726,7 @@ parse_showtech_config (const char* config_file)
                   "Parsing error while adding new sub feature description :  %s",
                   (const char*) event.data.scalar.value);
                 free_show_tech_config ();
-                goto cleanup;
+                goto CLEAN_UP;
               }
               add_subfeature_desc (
                 curr_subfeature,
@@ -746,7 +746,7 @@ parse_showtech_config (const char* config_file)
                   VLOG_ERR (
                     "Parsing error while adding dummy sub feature ");
                   free_show_tech_config ();
-                  goto cleanup;
+                  goto CLEAN_UP;
                 }
                 set_subfeature_as_dummy(curr_subfeature);
                 if (!curr_feature->p_subfeature)
@@ -775,7 +775,7 @@ parse_showtech_config (const char* config_file)
                   VLOG_ERR (
                     "Parsing error while adding dummy sub feature ");
                   free_show_tech_config ();
-                  goto cleanup;
+                  goto CLEAN_UP;
                 }
                 set_subfeature_as_dummy(curr_subfeature);
                 if (!curr_feature->p_subfeature)
@@ -805,7 +805,7 @@ parse_showtech_config (const char* config_file)
                   VLOG_ERR (
                     "Parsing error while adding dummy sub feature ");
                   free_show_tech_config ();
-                  goto cleanup;
+                  goto CLEAN_UP;
                 }
                 set_subfeature_as_dummy(curr_subfeature);
                 if (!curr_feature->p_subfeature)
@@ -823,7 +823,7 @@ parse_showtech_config (const char* config_file)
                 VLOG_ERR (
                   "Parsing error while adding cli command ");
                 free_show_tech_config ();
-                goto cleanup;
+                goto CLEAN_UP;
               }
               if (curr_subfeature->p_clicmds == NULL)
               {
@@ -842,7 +842,7 @@ parse_showtech_config (const char* config_file)
                 VLOG_ERR ("Parsing error while adding table %s ",
                   (const char*) event.data.scalar.value);
                 free_show_tech_config ();
-                goto cleanup;
+                goto CLEAN_UP;
               }
               add_ovstable_name (curr_table,
                (const char*) event.data.scalar.value);
@@ -855,7 +855,7 @@ parse_showtech_config (const char* config_file)
                 VLOG_ERR ("Parsing error while adding column %s ",
                   (const char*) event.data.scalar.value);
                 free_show_tech_config ();
-                goto cleanup;
+                goto CLEAN_UP;
               }
               curr_col = add_ovscolumn (
                 curr_col, (const char*) event.data.scalar.value);
@@ -864,7 +864,7 @@ parse_showtech_config (const char* config_file)
                 VLOG_ERR ("Parsing error while adding column %s ",
                   (const char*) event.data.scalar.value);
                 free_show_tech_config ();
-                goto cleanup;
+                goto CLEAN_UP;
               }
               if (curr_table->p_colmname == NULL)
               {
@@ -893,7 +893,7 @@ parse_showtech_config (const char* config_file)
           {
             VLOG_ERR ("Parsing error while adding new feature");
             free_show_tech_config ();
-            goto cleanup;
+            goto CLEAN_UP;
           }
           if (!feature_head)
           {
@@ -923,14 +923,14 @@ parse_showtech_config (const char* config_file)
           {
             VLOG_ERR ("Parsing error while creating new subfeature ");
             free_show_tech_config ();
-            goto cleanup;
+            goto CLEAN_UP;
           }
           curr_subfeature = add_subfeature (curr_subfeature);
           if (NULL == curr_subfeature)
           {
             VLOG_ERR ("Parsing error while adding new subfeature");
             free_show_tech_config ();
-            goto cleanup;
+            goto CLEAN_UP;
           }
 
           if (!curr_feature->p_subfeature)
@@ -977,7 +977,7 @@ parse_showtech_config (const char* config_file)
           {
             VLOG_ERR ("Parsing error while creating new table ");
             free_show_tech_config ();
-            goto cleanup;
+            goto CLEAN_UP;
           }
           current_state = TABLE;
           curr_col = NULL;
@@ -990,7 +990,7 @@ parse_showtech_config (const char* config_file)
               VLOG_ERR (
                 "Parsing error while adding dummy sub feature ");
               free_show_tech_config ();
-              goto cleanup;
+              goto CLEAN_UP;
             }
             set_subfeature_as_dummy(curr_subfeature);
 
@@ -1010,7 +1010,7 @@ parse_showtech_config (const char* config_file)
             VLOG_ERR (
               "Parsing error while adding new table ");
             free_show_tech_config ();
-            goto cleanup;
+            goto CLEAN_UP;
           }
           if (curr_subfeature->p_ovstable == NULL)
           {
@@ -1036,11 +1036,11 @@ parse_showtech_config (const char* config_file)
     {
       VLOG_ERR ("Parser error %d\n", parser.error);
       free_show_tech_config ();
-      goto cleanup;
+      goto CLEAN_UP;
     }
   }
 
-cleanup:
+CLEAN_UP:
 
   yaml_event_delete (&event);
   yaml_parser_delete (&parser);

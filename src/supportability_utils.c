@@ -173,3 +173,89 @@ get_value(const char *str)
    }
 return NULL;
 }
+
+/* Function  : get_yaml_tokens
+ * Responsibility : to read yaml file tokens.
+ */
+char*
+get_yaml_tokens(yaml_parser_t *parser,  yaml_event_t **tok, FILE *fh)
+{
+    char *key;
+    yaml_event_t *token = *tok;
+    if(fh == NULL) {
+        return NULL;
+    }
+    if(!yaml_parser_parse(parser, token)) {
+        return NULL;
+    }
+
+    if(token == NULL) {
+        return NULL;
+    }
+    while(token->type!= YAML_STREAM_END_EVENT)
+    {
+        switch(token->type)
+        {
+            case YAML_SCALAR_EVENT:
+                key = (char*)token->data.scalar.value;
+                return key;
+
+            default: break;
+        };
+        if(token->type != YAML_STREAM_END_EVENT) {
+            yaml_event_delete(token);
+        }
+        if(!yaml_parser_parse(parser, token)) {
+            return NULL;
+        }
+    }
+    return NULL;
+}
+
+/* Function  : strupr
+ * Responsibility : to convert from lower case to upper.
+ * return : NULL on failure, otherwise string
+ */
+char*
+strnupr(char *str, int size)
+{
+    int count = 0;
+    unsigned char *p = (unsigned char *)str;
+    if(str == NULL) {
+        return NULL;
+    }
+
+    while (*p) {
+        *p = toupper(*p);
+        p++;
+        count++;
+        if(count == size) {
+            break;
+        }
+    }
+
+    return str;
+}
+
+/*
+ * Function           : strlwr
+ * Responsibility     : To convert string from upper to lower case
+ */
+char*
+strnlwr(char *str, int size)
+{
+    int count = 0;
+    unsigned char *p = (unsigned char *)str;
+    if(str == NULL) {
+        return NULL;
+    }
+    while (*p) {
+        *p = tolower(*p);
+        p++;
+        count++;
+        if(count == size) {
+            break;
+        }
+    }
+    return str;
+}

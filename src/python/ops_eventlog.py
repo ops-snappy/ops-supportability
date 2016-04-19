@@ -46,7 +46,7 @@ def event_log_init(cat):
     for i in range(len(category)):
         if cat in category[i]:
 # Already initialised, so return.
-            return
+            return FAIL
     try:
         with open('/etc/openswitch/supportability/ops_events.yaml', 'r') as f:
             doc = yaml.load(f)
@@ -55,6 +55,7 @@ def event_log_init(cat):
                 yaml_cat = doc[EV_DEFINITION][txt][EV_CATEGORY]
                 if yaml_cat == cat:
                     mydic = {
+                        EV_CATEGORY: yaml_cat,
                         EV_NAME: doc[EV_DEFINITION][txt][EV_NAME],
                         EV_ID: doc[EV_DEFINITION][txt][EV_ID],
                         EV_SEVERITY: doc[EV_DEFINITION][txt][EV_SEVERITY],
@@ -63,14 +64,16 @@ def event_log_init(cat):
                     }
 # Now add it to global event list
                     content.append(mydic)
-# Add category to global category list
-                    category.append(cat)
                     found = 1
 
             if found is NOT_FOUND:
-# This means supplied event name is not there in YAML, so return.
+# This means supplied category name is not there in YAML, so return.
                 vlog.err("Event Category not Found")
                 return FAIL
+            else:
+# Add category to global category list
+                category.append(cat)
+
     except:
         vlog.err("Event Log Initialization Failed")
         return FAIL
@@ -84,7 +87,7 @@ def replace_str(keys, desc):
         key = "{" + key + "}"
         value = keys[j][1]
         desc = desc.replace(str(key), str(value))
-        return desc
+    return desc
 
 # API to log events from a python daemon
 
@@ -97,13 +100,16 @@ def log_event(name, *arg):
             ev_id = str(content[i][EV_ID])
             severity = content[i][EV_SEVERITY]
             desc = content[i][EV_DESCRIPTION]
+            categ = content[i][EV_CATEGORY]
             if len(arg):
                 desc = replace_str(arg, desc)
             found = 1
+            break;
     if found is NOT_FOUND:
 # This means supplied event name is not there in YAML, so return.
         vlog.err("Event not Found")
         return FAIL
     mesg = 'ops-evt|' + ev_id + '|' + severity + '|' + desc
     journal.send(
-        mesg, MESSAGE_ID='50c0fa81c2a545ec982a54293f1b1945', PRIORITY=severity)
+        mesg, MESSAGE_ID='50c0fa81c2a545ec982a54293f1b1945', PRIORITY=severity,
+        OPS_EVENT_ID=ev_id, OPS_EVENT_CATEGORY=categ)

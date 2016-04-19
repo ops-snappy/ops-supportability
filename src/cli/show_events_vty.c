@@ -82,24 +82,51 @@ convert_to_datetime(char *buf,int buf_size,const char *str)
  * Return         : 0 on success -1 otherwise
  */
 int
-journal_filter(const char *arg, int index, sd_journal *journal_handle)
+journal_filter(const char *arg, int index, sd_journal *journal_handle,struct range_list *list)
 {
     char buf[BUF_SIZE];
     int id = 0, return_value = 0, level = 0;
     if(index == EVENT_ID_INDEX) {
-        id = atoi(arg);
-        snprintf(buf, BUF_SIZE, "OPS_EVENT_ID=%d", id);
+      if(arg != NULL){
+         id = atoi(arg);
+         snprintf(buf, BUF_SIZE, "OPS_EVENT_ID=%d", id);
+      }
+      else if(list != NULL){
+         while(list != NULL)
+         {
+             id = atoi(list->value);
+             snprintf(buf, BUF_SIZE, "OPS_EVENT_ID=%d", id);
+             return_value = sd_journal_add_match(journal_handle,buf,0);
+             if(return_value < 0) {
+               VLOG_WARN("Failed to filter show events event-id:%d",id);
+               return -1;
+             }
+             memset(buf,0,BUF_SIZE);
+             list = list->link;
+         }
+      }
+      return 0;
     }
     else if(index == EVENT_SEVERITY_INDEX) {
         level = sev_level((char*)arg);
         if((level >= 0) && (level < MAX_SEVS)) {
+          for(;level>=0;level--){
             snprintf(buf, BUF_SIZE, "PRIORITY=%d", level);
+            return_value = sd_journal_add_match(journal_handle,buf,0);
+            if(return_value < 0) {
+               VLOG_WARN("Failed to filter show events severity:%d",level);
+               return -1;
+            }
+            memset(buf,0,BUF_SIZE);
+          }
+           return 0;
         }
         else {
             return -1;
         }
     }
     else if(index == EVENT_CATEGORY_INDEX) {
+        strnupr((char*)arg, strlen(arg));
         snprintf(buf, BUF_SIZE, "OPS_EVENT_CATEGORY=%s", arg);
     }
     else {
@@ -108,7 +135,7 @@ journal_filter(const char *arg, int index, sd_journal *journal_handle)
     }
     return_value = sd_journal_add_match(journal_handle,buf,0);
     if(return_value < 0) {
-      VLOG_ERR("Failed to log the events");
+      VLOG_ERR("Failed to filter the events");
       return -1;
   }
   return 0;
@@ -254,7 +281,7 @@ cli_show_events(sd_journal *journal_handle,int reverse, int filter)
 DEFUN_NOLOCK (cli_platform_show_events,
         cli_platform_show_events_cmd,
         "show events "
-        "{event-id <1001-999999>| severity (emer | alert | crit | err | warn | notice | info | debug) | category WORD|reverse}",
+        "{event-id <A:1001-999999>| severity (emer | alert | crit | err | warn | notice | info | debug) | category WORD|reverse}",
         SHOW_STR
         SHOW_EVENTS_STR
         SHOW_EVENTS_FILTER_EV_ID
@@ -268,12 +295,13 @@ DEFUN_NOLOCK (cli_platform_show_events,
         SEVERITY_LEVEL_NOTICE
         SEVERITY_LEVEL_INFO
         SEVERITY_LEVEL_DBG
-        SHOW_EVENTS_CATEGORY
-        SHOW_EVENTS_FILTER_CAT
-        SHOW_EVENTS_REVERSE)
+        SHOW_EVENTS_REVERSE
+        SHOW_EVENTS_CATEGORY)
 {
-    int i = 0, return_value = 0, reverse = 0, filter = 0;
+    int i = 1, return_value = 0, reverse = 0, filter = 0;
     sd_journal *journal_handle = NULL;
+    struct range_list *temp_to_free, *temp_to_display, *list = NULL;
+
     /* Open Journal File to read Event Logs */
     return_value = sd_journal_open(&journal_handle, SD_JOURNAL_LOCAL_ONLY);
 
@@ -282,6 +310,7 @@ DEFUN_NOLOCK (cli_platform_show_events,
         VLOG_ERR("Failed to open journal");
         return CMD_WARNING;
     }
+
     /* Lets find OPS Event Logs out of journal */
     return_value = sd_journal_add_match(journal_handle, MESSAGE_OPS_EVT_MATCH, 0);
     if(return_value < 0) {
@@ -291,7 +320,30 @@ DEFUN_NOLOCK (cli_platform_show_events,
         return CMD_WARNING;
     }
 
-    if(argv[3] != NULL) {
+    if(argv[0] != NULL) {
+      int len = strlen(argv[0]);
+      char *in = NULL;
+      in = (char *)calloc(len,sizeof(char));
+      if (in != NULL){
+         strncpy(in, argv[0],len);
+         list = cmd_get_range_value(in, 0);
+         if(list == NULL){
+           FREE(in);
+           return CMD_ERR_NO_MATCH;
+         }
+         temp_to_display = temp_to_free = list;
+         return_value = journal_filter(NULL,0, journal_handle,temp_to_display);
+         if(return_value < 0) {
+            sd_journal_close(journal_handle);
+            vty_out(vty,"Log Filter failed%s",VTY_NEWLINE);
+            VLOG_ERR("journal_filter failed");
+            FREE(in);
+            return CMD_WARNING;
+         }
+         temp_to_free = cmd_free_memory_range_list(temp_to_free);
+      }
+    }
+    if(argv[2] != NULL) {
         /* Reverse list option */
         return_value = sd_journal_seek_tail(journal_handle);
         if(return_value < 0) {
@@ -304,10 +356,12 @@ DEFUN_NOLOCK (cli_platform_show_events,
         reverse = TRUE;
     }
     /* Filter Event Logs based on given filters in CLI */
-    while(i < MAX_FILTER_ARGS)
+    while(i <= MAX_FILTER_ARGS)
     {
         if(argv[i] != NULL) {
-            return_value = journal_filter(argv[i], i, journal_handle);
+            if(i != 2) {
+                return_value = journal_filter(argv[i], i, journal_handle,NULL);
+            }
             if(return_value < 0) {
                 sd_journal_close(journal_handle);
                 vty_out(vty,"Log Filter failed%s",VTY_NEWLINE);

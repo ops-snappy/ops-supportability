@@ -42,6 +42,22 @@ categories:
   description: 'Events related to Sub-Interface'
   category_rank: 10
 
+- event_category: OSPFv2
+  description: 'Events related to OSPFv2'
+  category_rank: 11
+
+- event_category: SFLOW
+  description: 'Events related to sFlow'
+  category_rank: 12
+
+- event_category: NTP
+  description: 'Events related to NTP'
+  category_rank: 13
+
+- event_category: SUPPORTABILITY
+  description: 'Events related to Supportability'
+  category_rank: 14
+
 event_definitions:
 #- event_name: XYZ_UP
 #  event_category: ABC
@@ -56,6 +72,8 @@ event_definitions:
   event_ID : 1001
   severity: LOG_INFO
   keys: NA
+  description:
+     'This command enables the LLDP (Link Layer Discovery Protocol) feature in the device.'
   event_description_template:
       'LLDP Enabled'
 
@@ -64,6 +82,8 @@ event_definitions:
   event_ID : 1002
   severity: LOG_INFO
   keys: NA
+  description:
+     'This command disables the LLDP (Link Layer Discovery Protocol) feature in the device.'
   event_description_template:
       'LLDP Disabled'
 
@@ -72,6 +92,8 @@ event_definitions:
   event_ID : 1003
   severity: LOG_INFO
   keys: value
+  description:
+     'This command sets the LLDP status update interval in seconds which are transmitted to neighbors.'
   event_description_template:
       'Configured LLDP tx-timer with {value}'
 
@@ -80,6 +102,8 @@ event_definitions:
   event_ID : 1004
   severity: LOG_INFO
   keys: interface
+  description:
+     'This command displays detailed information about a particular neighbor connected to a particular interface.'
   event_description_template:
       'LLDP neighbour added on {interface}'
 
@@ -88,6 +112,8 @@ event_definitions:
   event_ID : 1005
   severity: LOG_INFO
   keys: interface
+  description:
+     'This command displays information about the switchs neighbors.'
   event_description_template:
       'LLDP neighbour update on {interface}'
 
@@ -96,6 +122,8 @@ event_definitions:
   event_ID : 1006
   severity: LOG_INFO
   keys: interface
+  description:
+     'This command clears LLDP neighbor details.'
   event_description_template:
       'LLDP neighbour deleted on {interface}'
 
@@ -104,6 +132,8 @@ event_definitions:
   event_ID : 1007
   severity: LOG_INFO
   keys: value
+  description:
+     'This command sets the Management IP Address to be sent using LLDP TLV.'
   event_description_template:
       'Configured LLDP Management pattern {value}'
 
@@ -112,6 +142,8 @@ event_definitions:
   event_ID : 1008
   severity: LOG_INFO
   keys: hold
+  description:
+     'This command sets the amount of time (in seconds), a receiving device holds the information sent before discarding it.'
   event_description_template:
       'Configured LLDP tx-hold with {hold}'
 
@@ -378,3 +410,293 @@ event_definitions:
   keys: interface, state
   event_description_template:
       'Sub-Interface {interface}, configured administratively {state}'
+
+- event_name: OSPFv2_ROUTE
+  event_category: OSPFv2
+  event_ID : 11001
+  severity: LOG_INFO
+  keys: event, prefix, route
+  description:
+    'Logs OSPFv2 route add and delete.'
+  event_description_template:
+      '{event} with {destination} {nexthops}'
+
+- event_name: OSPFv2_NSM_STATE
+  event_category: OSPFv2
+  event_ID : 11002
+  severity: LOG_INFO
+  keys: router-id, ospf-interface, state, next_state, event
+  description:
+    'Logs the changes in OSPFv2 neighbour state machine.'
+  event_description_template:
+      'AdjChg: Nbr {router-id} on {ospf-interface}: {state} -> {next_state} ({event})'
+
+- event_name: OSPFv2_ROUTER_ID
+  event_category: OSPFv2
+  event_ID : 11003
+  severity: LOG_INFO
+  keys: old, new
+  description:
+    'Logs the changes in the router-id.'
+  event_description_template:
+      'Router-id  updated from {old} to {new}'
+
+- event_name: SFLOW_HSFLOWD_FAILURE
+  event_category: SFLOW
+  event_ID : 12001
+  severity: LOG_ERR
+  keys: operation, error
+  description:
+    'Log a failure when trying to start/stop/restart host sFlow daemon.'
+  event_description_template:
+      'Failed to {operation} host sFlow agent : {error}'
+
+- event_name: SFLOW_HSFLOWD_CFG_FILE_FAILURE
+  event_category: SFLOW
+  event_ID : 12002
+  severity: LOG_ERR
+  keys: operation, file, error
+  description:
+    'Log a failure when trying to read/write to host sFlow configuration file.'
+  event_description_template:
+      'Failed to {operation} host sFlow configuration file {file} : {error}'
+
+- event_name: SFLOW_SIM_CFG_FAILURE
+  event_category: SFLOW
+  event_ID : 12003
+  severity: LOG_ERR
+  keys: operation, bridge, error
+  description:
+    'Log a failure when trying to configure sFlow on SIM OVS.'
+  event_description_template:
+      'Failed to {operation} sFlow configuration from bridge {bridge} : {error}'
+
+- event_name: SFLOW_IPTABLES_DEL_ALL_FAILURE
+  event_category: SFLOW
+  event_ID : 12004
+  severity: LOG_ERR
+  keys: error
+  description:
+    'Log a failure when trying to delete all iptable rules added for sFlow.'
+  event_description_template:
+      'Failed to delete all iptable rules : {error}'
+
+- event_name: SFLOW_IPTABLES_FAILURE
+  event_category: SFLOW
+  event_ID : 12005
+  severity: LOG_ERR
+  keys: operation, chain, port, error
+  description:
+    'Log a failure when trying to add/delete an iptable rule for sFlow.'
+  event_description_template:
+      'Failed to {operation} {chain} iptable rules for {port} : {error}'
+
+- event_name: SFLOW_INIT_FAILURE
+  event_category: SFLOW
+  event_ID : 12006
+  severity: LOG_ERR
+  keys: NA
+  description:
+    'Logs an error if sFlow initialization fails.'
+  event_description_template:
+      'sFlow initialization failed.'
+
+- event_name: SFLOW_CALLBACK_INVALID_PKT
+  event_category: SFLOW
+  event_ID : 12007
+  severity: LOG_ERR
+  keys: NA
+  description:
+    'Logs an error for an invalid packet in sFlow callback.'
+  event_description_template:
+      'Invalid packet sent by ASIC in sFlow callback.'
+
+- event_name: SFLOW_STATS_NETDEV_FAILURE
+  event_category: SFLOW
+  event_ID : 12008
+  severity: LOG_ERR
+  keys: interface
+  description:
+    'Logs an error if an interface does not have a netdev class.'
+  event_description_template:
+      'Unable to get netdev for interface {interface}'
+
+- event_name: SFLOW_FILTER_DESC_BLANK_FAILURE
+  event_category: SFLOW
+  event_ID : 12009
+  severity: LOG_ERR
+  keys: NA
+  description:
+    'Logs an error if the descrption to create a filter is blank.'
+  event_description_template:
+      'Failed to create KNET filter as description is blank'
+
+- event_name: SFLOW_FILTER_CREATE_FAILURE
+  event_category: SFLOW
+  event_ID : 12010
+  severity: LOG_ERR
+  keys: desc
+  description:
+    'Logs an error if sFlow KNET filter creation fails.'
+  event_description_template:
+      'Failed to create KNET filter for : {desc}'
+
+- event_name: SFLOW_SAMPLED_PKT_FAILURE
+  event_category: SFLOW
+  event_ID : 12011
+  severity: LOG_ERR
+  keys: NA
+  description:
+    'Logs an error if sampled packet is null.'
+  event_description_template:
+      'The received sampled packet is null'
+
+- event_name: SFLOW_AGENT_FAILURE
+  event_category: SFLOW
+  event_ID : 12012
+  severity: LOG_ERR
+  keys: NA
+  description:
+    'Logs an error if sFlow agent is not initialized.'
+  event_description_template:
+      'The sFlow agent is not initialized'
+
+- event_name: SFLOW_SAMPLER_FAILURE
+  event_category: SFLOW
+  event_ID : 12013
+  severity: LOG_ERR
+  keys: NA
+  description:
+    'Logs an error if sFlow sampler is not initialized.'
+  event_description_template:
+      'The sFlow sampler is not initialized'
+
+- event_name: SFLOW_INVALID_PORT_FAILURE
+  event_category: SFLOW
+  event_ID : 12014
+  severity: LOG_ERR
+  keys: port
+  description:
+    'Logs an error if sFlow is enabled/disabled on an invalid port.'
+  event_description_template:
+      'Cannot enable/disable sFlow on an invalid port : {port}'
+
+- event_name: SFLOW_SAMPLER_MISSING_FAILURE
+  event_category: SFLOW
+  event_ID : 12015
+  severity: LOG_ERR
+  keys: port
+  description:
+    'Logs an error if sFlow sampler is missing on a port.'
+  event_description_template:
+      'sFlow sampler is not available on port : {port}'
+
+- event_name: SFLOW_RECEIVER_MISSING_FAILURE
+  event_category: SFLOW
+  event_ID : 12016
+  severity: LOG_ERR
+  keys: NA
+  description:
+    'Logs an error if sFlow receiver is not available.'
+  event_description_template:
+      'sFlow receiver is not available'
+
+- event_name: SFLOW_FETCH_PORT_CONFIG_FAILURE
+  event_category: SFLOW
+  event_ID : 12017
+  severity: LOG_ERR
+  keys: error
+  description:
+    'Logs an error if port configuration is not available.'
+  event_description_template:
+      'Failed to retrieve port configuration : {error}'
+
+- event_name: SFLOW_SET_SAMPLING_RATE_FAILURE
+  event_category: SFLOW
+  event_ID : 12018
+  severity: LOG_ERR
+  keys: port, error
+  description:
+    'Logs an error if setting a sampling rate on a port fails.'
+  event_description_template:
+      'Failed to set sampling rate on port {port} : {error}'
+
+- event_name: SFLOW_GET_SAMPLING_RATE_FAILURE
+  event_category: SFLOW
+  event_ID : 12019
+  severity: LOG_ERR
+  keys: port, error
+  description:
+    'Logs an error if unable to retrieve sampling rate on a port.'
+  event_description_template:
+      'Failed to get sampling rate on port {port} : {error}'
+
+- event_name: SFLOW_AGENT_IP_CONFIG_FAILURE
+  event_category: SFLOW
+  event_ID : 12020
+  severity: LOG_ERR
+  keys: ip_address
+  description:
+    'Logs an error in case of invalid agent interface IP address configuration.'
+  event_description_template:
+      'Invalid agent interface IP address : {ip_address}'
+
+- event_name: SFLOW_COLLECTOR_IP_CONFIG_FAILURE
+  event_category: SFLOW
+  event_ID : 12021
+  severity: LOG_ERR
+  keys: ip_address
+  description:
+    'Logs an error in case of invalid collector IP address configuration.'
+  event_description_template:
+      'Invalid collector IP address : {ip_address}'
+
+- event_name: SFLOW_INTF_STATISTICS_FAILURE
+  event_category: SFLOW
+  event_ID : 12022
+  severity: LOG_ERR
+  keys: unit, port, error
+  description:
+    'Logs an error if unable to retrieve interface statistics.'
+  event_description_template:
+      'Failed to get interface statistics for unit {unit} port {port} : {error}'
+
+- event_name: NTP_ASSOC
+  event_category: NTP
+  event_ID : 13001
+  severity: LOG_INFO
+  keys: event, server, server_info
+  description:
+    'Logs NTP Association configuration changes'
+  event_description_template:
+    'NTP Association {event} : {server} {server_info}'
+
+- event_name: NTP_KEY
+  event_category: NTP
+  event_ID : 13002
+  severity: LOG_INFO
+  keys: trusted_keys, untrusted_keys
+  description:
+    'Logs NTP Trusted and Untrusted authentication-keys'
+  event_description_template:
+    'NTP Trusted keys {trusted_keys} and Untrusted keys {untrusted_keys}'
+
+- event_name: NTP_GLOBAL
+  event_category: NTP
+  event_ID : 13003
+  severity: LOG_INFO
+  keys: old, new
+  description:
+    'Logs NTP Authentication state changes'
+  event_description_template:
+    'NTP Authentication state change : {old} -> {new}'
+
+- event_name: SUPPORTABILITY_DAEMON_CRASH
+  event_category: SUPPORTABILITY
+  event_ID : 14001
+  severity: LOG_CRIT
+  keys: process, signal, timestamp
+  description:
+      'A daemon has crashed and generated core dump'
+  event_description_template:
+      '{process} crashed due to {signal},{timestamp}'

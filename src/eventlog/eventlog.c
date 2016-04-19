@@ -470,7 +470,7 @@ make_key_format(char *key)
 
     /* Now plug in the new prefix. */
     key[0] = '{';
-    key[len+1] = '}';
+    strncat(key, "}", len);
     return 0;
 }
 
@@ -493,6 +493,7 @@ char
     else {
         return NULL;
     }
+    memset(key_name, 0, sizeof(key_name));
     strncpy(key_name, orig, (size+1));
     /* Prepend & append '}' to key name */
     if(make_key_format(key_name) < 0) {
@@ -661,11 +662,6 @@ log_event(char *ev_name,...)
     }
     /* Get the number of key's in the event */
     key_nums = ev_table[index].num_of_keys;
-    /* Keys are defined with '{' & '}' in the
-     * YAML file. Let's remove that */
-    if(ret < 0) {
-        return -1;
-    }
     while(i < key_nums)
     {
         tmp = va_arg(arg, char*);
@@ -684,6 +680,7 @@ log_event(char *ev_name,...)
         /* Populate the key with the value in message */
         ret = populate_str(evt_msg, key_value_pair);
         if(ret < 0) {
+            VLOG_ERR("Failure at populate_str()");
             return -1;
         }
         /* Make all the key-value pair's in the form of

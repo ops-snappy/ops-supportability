@@ -24,8 +24,10 @@
 #ifndef __FEATURE_MAPPING_H
 #define __FEATURE_MAPPING_H
 
-#define FEATURE_MAPPING_CONF   "/etc/openswitch/supportability/ops_featuremapping.yaml"
+#define FEATURE_MAPPING_CONF  \
+    "/etc/openswitch/supportability/ops_featuremapping.yaml"
 #define FEATURE_SIZE           20
+#define FEATURE_DESC_SIZE     100
 
 
 

@@ -27,13 +27,13 @@
 void cli_pre_init(void);
 void cli_post_init(void);
 
-#define SHOW_TECH_STR              "Run show tech for all supported features\n"
-#define SHOW_TECH_LIST_STR         "List all the supported show tech features\n"
-#define SHOW_TECH_FILE_STR         "Save show tech output in the given file\n"
+#define SHOW_TECH_STR              "Display output of a predefined command sequence used by technical support\n"
+#define SHOW_TECH_LIST_STR         "Display supported feature groups\n"
+#define SHOW_TECH_FILE_STR         "Capture command-output into a specified file\n"
+#define SHOW_TECH_FILENAME_STR     "Specify the filename to capture command-output\n"
+#define SHOW_TECH_FEATURE_STR      "Display output of feature-specific predefined command sequence used by technical support\n"
+#define SHOW_TECH_SUB_FEATURE_STR  "Display output of sub feature-specific predefined command sequence used by technical support\n"
 #define SHOW_TECH_FILE_FORCE_STR   "Overwrite if the given file exists\n"
-#define SHOW_TECH_FILENAME_STR     "Name of output file, will be saved in /tmp folder\n"
-#define SHOW_TECH_FEATURE_STR      "Run show tech for the feature specified\n"
-#define SHOW_TECH_SUB_FEATURE_STR  "Run show tech for the sub feature specified\n"
 void show_tech_vty_init();
 
 #endif //_SHOW_TECH_VTY_H
