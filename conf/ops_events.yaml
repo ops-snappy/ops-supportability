@@ -66,6 +66,11 @@ categories:
   description: 'Events related to LAG'
   category_rank: 16
 
+- event_category: COPP
+  description: 'Events related to control plane policing'
+  category_rank: 17
+
+
 event_definitions:
 #- event_name: XYZ_UP
 #  event_category: ABC
@@ -876,3 +881,83 @@ event_definitions:
     'Logs the failure to set port selection criteria.'
   event_description_template:
       'Trunk psc set failed on unit {unit} lag_id {lag_id} psc {psc} rc {rc} error {error}'
+
+- event_name: COPP_INITIALIZATION_FAILURE
+  event_category: COPP
+  event_ID : 17001
+  severity: LOG_ERR
+  keys: NA
+  description:
+    'Logs COPP initialization failure.'
+  event_description_template:
+      'COPP initialization failed'
+
+- event_name: COPP_INITIALIZATION_SUCCESS
+  event_category: COPP
+  event_ID : 17002
+  severity: LOG_INFO
+  keys: NA
+  description:
+    'Logs COPP initialization success.'
+  event_description_template:
+      'COPP initialization successful'
+
+- event_name: COPP_INGRESS_FP_GROUP_CREATE_FAILURE
+  event_category: COPP
+  event_ID : 17003
+  severity: LOG_ERR
+  keys: NA
+  description:
+    'Logs ingress field processor group creation failure.'
+  event_description_template:
+      'Ingress FP Group create failed'
+
+- event_name: COPP_EGRESS_FP_GROUP_CREATE_FAILURE
+  event_category: COPP
+  event_ID : 17004
+  severity: LOG_ERR
+  keys: NA
+  description:
+    'Logs egress field processor group creation failure.'
+  event_description_template:
+      'Egress FP Group create failed'
+
+- event_name: COPP_INIT_DEFAULTS_FAILURE
+  event_category: COPP
+  event_ID : 17005
+  severity: LOG_ERR
+  keys: NA
+  description:
+    'Logs failure for initialization of default values.'
+  event_description_template:
+      'Programming defaults failed'
+
+- event_name: COPP_CLASS_PACKET_RULE_FAILURE
+  event_category: COPP
+  event_ID : 17006
+  severity: LOG_ERR
+  keys: class
+  description:
+    'Logs failure of programming queue for a CoPP packet class.'
+  event_description_template:
+      'Packet class programming failed for {class}'
+
+- event_name: COPP_CLASS_INGRESS_FP_CREATE_FAILURE
+  event_category: COPP
+  event_ID : 17007
+  severity: LOG_ERR
+  keys: class
+  description:
+    'Logs failure of programming ingress field processor for a COPP class.'
+  event_description_template:
+      'Failed to program ingress field processor rule for {class}'
+
+- event_name: COPP_CLASS_EGRESS_FP_CREATE_FAILURE
+  event_category: COPP
+  event_ID : 17008
+  severity: LOG_ERR
+  keys: class
+  description:
+    'Logs failure of programming egress field processor for a COPP class.'
+  event_description_template:
+      'Failed to program egress rule for {class}'
