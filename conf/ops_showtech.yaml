@@ -167,3 +167,10 @@
       - "show spanning-tree detail"
       - "show spanning-tree mst-config"
       - "show spanning-tree mst"
+# Show Tech SFLOW Feature Definition
+  feature:
+  -
+    feature_desc: "sFlow"
+    feature_name: sflow
+    cli_cmds:
+       - "show sflow"

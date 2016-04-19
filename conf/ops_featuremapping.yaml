@@ -57,3 +57,8 @@
     feature_desc: "Multiple Spanning Tree Protocol"
     daemon:
        - "ops-stpd"
+
+    feature_name: "sflow"
+    feature_desc: "Sampled Flow Protocol"
+    daemon:
+       - "ops-switchd"
