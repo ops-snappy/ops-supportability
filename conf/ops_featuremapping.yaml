@@ -1,10 +1,14 @@
 ---
   -
+    feature_name: "sysd"
+    feature_desc: "System Daemon and Mgmt Info"
+    daemon:
+      - "ops-sysd"
+  -
     feature_name: "lldp"
     feature_desc: "Link Layer Discovery Protocol"
     daemon:
       - "ops-lldpd"
-
   -
     feature_name: "lacp"
     feature_desc: "Link Aggregation Control Protocol"
