@@ -58,6 +58,10 @@ categories:
   description: 'Events related to Supportability'
   category_rank: 14
 
+- event_category: LACP
+  description: 'Events related to LACP'
+  category_rank: 15
+
 event_definitions:
 #- event_name: XYZ_UP
 #  event_category: ABC
@@ -700,3 +704,91 @@ event_definitions:
       'A daemon has crashed and generated core dump'
   event_description_template:
       '{process} crashed due to {signal},{timestamp}'
+
+# Events for LACP
+- event_name: LAG_CREATE
+  event_category: LACP
+  event_ID: 15001
+  severity: LOG_INFO
+  keys: lag_id
+  event_description_template: 'LAG {lag_id} created'
+
+- event_name: LAG_DELETE
+  event_category: LACP
+  event_ID: 15002
+  severity: LOG_INFO
+  keys: lag_id
+  event_description_template: 'LAG {lag_id} deleted'
+
+- event_name: LAG_INTERFACE_ADD
+  event_category: LACP
+  event_ID: 15003
+  severity: LOG_INFO
+  keys: lag_id, intf_id
+  event_description_template: 'Interface {intf_id} added to LAG {lag_id} '
+
+- event_name: LAG_INTERFACE_REMOVE
+  event_category: LACP
+  event_ID: 15004
+  severity: LOG_INFO
+  keys: lag_id, intf_id
+  event_description_template: 'Interface {intf_id} removed from LAG {lag_id} '
+
+- event_name: LACP_SYSTEM_PRIORITY_SET
+  event_category: LACP
+  event_ID: 15005
+  severity: LOG_INFO
+  keys: system_priority
+  event_description_template: 'LACP system priority set to {system_priority} '
+
+- event_name: LACP_MODE_SET
+  event_category: LACP
+  event_ID: 15006
+  severity: LOG_INFO
+  keys: lag_id, lacp_mode
+  event_description_template: 'LACP mode set to {lacp_mode} for LAG {lag_id} '
+
+- event_name: LACP_SYSTEM_ID_SET
+  event_category: LACP
+  event_ID: 15007
+  severity: LOG_INFO
+  keys: system_id
+  event_description_template: 'LACP system ID set to {system_id}'
+
+- event_name: LACP_RATE_SET
+  event_category: LACP
+  event_ID: 15008
+  severity: LOG_INFO
+  keys: lag_id, lacp_rate
+  event_description_template: 'LACP rate set to {lacp_rate} for LAG {lag_id}'
+
+- event_name: LACP_PARTNER_DETECTED
+  event_category: LACP
+  event_ID: 15009
+  severity: LOG_INFO
+  keys: intf_id, lag_id
+  event_description_template:
+      'Partner is detected for interface {intfd_id} LAG {lag_id}'
+
+- event_name: LACP_PARTNER_OUT_OF_SYNC
+  event_category: LACP
+  event_ID: 15010
+  severity: LOG_WARN
+  keys: lag_id, actor_state, partner_state
+  event_description_template:
+      'Partner is out of sync for LAG {lag_id}. Actor state: {actor_state}, partner state {partner_state}'
+
+- event_name: LACP_PARTNER_TIMEOUT
+  event_category: LACP
+  event_ID: 15011
+  severity: LOG_WARN
+  keys: intf_id, lag_id, fsm_state
+  event_description_template:
+      'Partner is lost for {intf_id} LAG {lag_id}. Current state: {fsm_state}'
+
+- event_name: LAG_CREATE_FAILED
+  event_category: LACP
+  event_ID: 15012
+  severity: LOG_ERR
+  keys: lag_id
+  event_description_template: 'Failed to create LAG {lag_id}'
