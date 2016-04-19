@@ -150,3 +150,11 @@
               - hw_default
               - other_config
               - external_ids
+
+# Show Tech ECMP Feature Definition
+  feature:
+  -
+    feature_desc: "IP ECMP Load Balancing"
+    feature_name: ecmp
+    cli_cmds:
+      - "show ip ecmp"
