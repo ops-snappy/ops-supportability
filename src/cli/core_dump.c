@@ -85,7 +85,7 @@ extract_info (
     char value[SIZE_DATE_AND_TIME+1];
     int strsize = 0;
     int matchstatus;
-    ssize_t result;
+    int result;
     char date_string[DATE_STR_SIZE]={0};
     char time_string[TIME_STR_SIZE]={0};
     /* contains the matches found. */
@@ -103,9 +103,13 @@ extract_info (
         /* Get Daemon Name */
         result = getxattr(filename, "user.coredump.comm",cd->daemon_name,DEAMON_NAME_SIZE );
 
-        if ((result == -1) && (result > DEAMON_NAME_SIZE) )
+        if (result == -1)
         {
             return -1;
+        }
+        else if (result > DEAMON_NAME_SIZE)
+        {
+            cd->daemon_name[DEAMON_NAME_SIZE] = 0;
         }
         else
         {
@@ -115,9 +119,13 @@ extract_info (
         /* Get crash signal, to generate the crash message/reason */
         result = getxattr(filename, "user.coredump.signal", cd->crash_signal,SIGNAL_STR_SIZE);
 
-        if (result == -1 && (result > SIGNAL_STR_SIZE))
+        if (result == -1)
         {
             return -1;
+        }
+        else if (result > SIGNAL_STR_SIZE)
+        {
+            cd->crash_signal[SIGNAL_STR_SIZE] = 0;
         }
         else
         {
@@ -127,9 +135,13 @@ extract_info (
         /* Get PID, used as instance_id */
         result = getxattr(filename, "user.coredump.pid", cd->crash_instance_id, INSTANCE_ID_SIZE);
 
-        if(result == -1 && result > INSTANCE_ID_SIZE)
+        if(result == -1)
         {
             return -1;
+        }
+        else if (result > INSTANCE_ID_SIZE)
+        {
+            cd->crash_instance_id[INSTANCE_ID_SIZE] = 0;
         }
         else
         {
@@ -140,9 +152,13 @@ extract_info (
 
         result = getxattr(filename, "user.coredump.timestamp", value, SIZE_DATE_AND_TIME);
 
-        if ( (result == -1) && (result > SIZE_DATE_AND_TIME))
+        if (result == -1)
         {
             return -1;
+        }
+        else if (result > SIZE_DATE_AND_TIME)
+        {
+            value[SIZE_DATE_AND_TIME] = 0;
         }
         else
         {
