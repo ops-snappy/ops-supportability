@@ -720,14 +720,14 @@ event_definitions:
   event_ID: 15001
   severity: LOG_INFO
   keys: lag_id
-  event_description_template: 'LAG {lag_id} created'
+  event_description_template: 'Dynamic LAG {lag_id} created'
 
 - event_name: LAG_DELETE
   event_category: LACP
   event_ID: 15002
   severity: LOG_INFO
   keys: lag_id
-  event_description_template: 'LAG {lag_id} deleted'
+  event_description_template: 'Dynamic LAG {lag_id} deleted'
 
 - event_name: LAG_INTERFACE_ADD
   event_category: LACP
@@ -762,30 +762,30 @@ event_definitions:
   event_ID: 15007
   severity: LOG_INFO
   keys: system_id
-  event_description_template: 'LACP system ID set to {system_id}'
+  event_description_template: 'LACP system ID set to {system_id} '
 
 - event_name: LACP_RATE_SET
   event_category: LACP
   event_ID: 15008
   severity: LOG_INFO
   keys: lag_id, lacp_rate
-  event_description_template: 'LACP rate set to {lacp_rate} for LAG {lag_id}'
+  event_description_template: 'LACP rate set to {lacp_rate} for LAG {lag_id} '
 
 - event_name: LACP_PARTNER_DETECTED
   event_category: LACP
   event_ID: 15009
   severity: LOG_INFO
-  keys: intf_id, lag_id
+  keys: intf_id, lag_id, partner_sys_id
   event_description_template:
-      'Partner is detected for interface {intfd_id} LAG {lag_id}'
+      'Partner is detected for interface {intf_id} LAG {lag_id} : {partner_sys_id} '
 
 - event_name: LACP_PARTNER_OUT_OF_SYNC
   event_category: LACP
   event_ID: 15010
   severity: LOG_WARN
-  keys: lag_id, actor_state, partner_state
+  keys: intf_id, lag_id, actor_state, partner_state
   event_description_template:
-      'Partner is out of sync for LAG {lag_id}. Actor state: {actor_state}, partner state {partner_state}'
+      'Partner is out of sync for interface {intf_id} LAG {lag_id}. Actor state: {actor_state}, partner state {partner_state} '
 
 - event_name: LACP_PARTNER_TIMEOUT
   event_category: LACP
@@ -793,14 +793,14 @@ event_definitions:
   severity: LOG_WARN
   keys: intf_id, lag_id, fsm_state
   event_description_template:
-      'Partner is lost for {intf_id} LAG {lag_id}. Current state: {fsm_state}'
+      'Partner is lost (timed out) for interface {intf_id} LAG {lag_id}. State: {fsm_state} '
 
 - event_name: LAG_CREATE_FAILED
   event_category: LACP
   event_ID: 15012
   severity: LOG_ERR
   keys: lag_id
-  event_description_template: 'Failed to create LAG {lag_id}'
+  event_description_template: 'Failed to create LAG {lag_id} '
 
 - event_name: TRUNK_SET_SUCCEEDS
   event_category: LAG
