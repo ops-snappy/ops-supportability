@@ -209,3 +209,11 @@
       - "show arp"
       - "show ipv6 neighbors"
       - "show interface loopback"
+
+# Show Tech COPP Feature Definition
+  feature:
+  -
+    feature_desc: "Control Plane Policing"
+    feature_name: copp
+    cli_cmds:
+      - "show copp statistics"
