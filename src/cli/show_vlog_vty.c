@@ -172,6 +172,7 @@ vtysh_vlog_interface_daemon(char *feature,char *daemon ,char **cmd_type,
       VLOG_ERR("invalid paramter daemon or command");
       return CMD_WARNING;
    }
+
    /*connect vtysh to the daemon*/
    client = vtysh_vlog_connect_to_target(daemon);
    if(!client) {
@@ -209,15 +210,17 @@ vtysh_vlog_interface_daemon(char *feature,char *daemon ,char **cmd_type,
       {
          case 1:  /*feature result*/
 
-            if(flag == 0) {
+            if(flag == 0 && cmd_result != NULL) {
                vty_out(vty,"========================================%s",
                      VTY_NEWLINE);
                vty_out(vty,"Feature               Syslog     File%s",
                      VTY_NEWLINE);
                vty_out(vty,"========================================%s",
                      VTY_NEWLINE);
-               vty_out(vty,"%-17.17s   %-17.17s%s",feature,
-                     (cmd_result+POSITION),VTY_NEWLINE);
+               if(feature != NULL) {
+                  vty_out(vty,"%-17.17s   %-17.17s%s",feature,
+                        (cmd_result+POSITION),VTY_NEWLINE);
+               }
                flag = 1;
             }
             break;
@@ -229,19 +232,22 @@ vtysh_vlog_interface_daemon(char *feature,char *daemon ,char **cmd_type,
                   VTY_NEWLINE);
             vty_out(vty,"======================================%s",
                   VTY_NEWLINE);
-            vty_out(vty,"%-17.17s %-17.17s%s",daemon,
+            if(cmd_result != NULL && daemon != NULL){
+               vty_out(vty,"%-17.17s %-17.17s%s",daemon,
                   (cmd_result+POSITION),VTY_NEWLINE);
+            }
             break;
 
          case 3: /*show vlog result*/
             /*flag == 0 means first time displays feature and deamon*/
-            if(flag == 0) {
+            if(flag == 0 && cmd_result != NULL && feature != NULL &&
+                  daemon != NULL) {
                vty_out(vty,"%-15.15s %-13.13s %-18.18s%s",feature,
                      daemon,(cmd_result+POSITION),VTY_NEWLINE);
                flag = 1;
                break;
             }
-            if(flag == 1) {
+            if(flag == 1 && cmd_result != NULL && daemon != NULL) {
                /*flag == 1 means displays next daemons
                 * of corresponding feature*/
                vty_out(vty,"                %-13.13s %-18.18s%s",
@@ -388,11 +394,11 @@ cli_show_vlog_config_list(void)
       }
    }
    struct feature *iter = feature_head;
-   vty_out(vty,"=============================================%s",VTY_NEWLINE);
+   vty_out(vty,"==============================================%s",VTY_NEWLINE);
    vty_out(vty,"Features          Description%s",VTY_NEWLINE);
-   vty_out(vty,"=============================================%s",VTY_NEWLINE);
+   vty_out(vty,"==============================================%s",VTY_NEWLINE);
    while(iter != NULL) {
-      vty_out(vty,"%-17.17s %-50.50s %s",iter->name,iter->desc,VTY_NEWLINE);
+      vty_out(vty,"%-17.17s %-100.100s %s",iter->name,iter->desc,VTY_NEWLINE);
       iter =iter->next;
    }
    return CMD_SUCCESS;
