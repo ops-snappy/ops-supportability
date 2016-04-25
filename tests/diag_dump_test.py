@@ -668,15 +668,19 @@ class Test_diag_dump:
 
     def test_diag_dump_feature(self):
         assert(checkDiagDumpFeature(dut01Obj, 'lldp'))
+        assert(checkDiagDumpFeature(dut01Obj, 'lacp'))
 
     def test_diag_dump_feature_file(self):
         assert(checkDiagDumpFeatureFile(dut01Obj, 'lldp', 'diag.txt'))
+        assert(checkDiagDumpFeatureFile(dut01Obj, 'lacp', 'diag.txt'))
 
     def test_diag_dump_feature_file_path(self):
         assert(checkDiagDumpFeatureFilePath(dut01Obj, 'lldp', 'diag.txt'))
+        assert(checkDiagDumpFeatureFilePath(dut01Obj, 'lacp', 'diag.txt'))
 
     def test_diag_dump_feature_file_size(self):
         assert(checkDiagDumpFeatureFileSize(dut01Obj, 'lldp', 'diag.txt'))
+        assert(checkDiagDumpFeatureFileSize(dut01Obj, 'lacp', 'diag.txt'))
 
     # negative test case
     # When ops-bgpd daemon implement diag feature this TC will fail and they

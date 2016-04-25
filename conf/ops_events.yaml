@@ -58,6 +58,19 @@ categories:
   description: 'Events related to Supportability'
   category_rank: 14
 
+- event_category: LACP
+  description: 'Events related to LACP'
+  category_rank: 15
+
+- event_category: LAG
+  description: 'Events related to LAG'
+  category_rank: 16
+
+- event_category: COPP
+  description: 'Events related to control plane policing'
+  category_rank: 17
+
+
 event_definitions:
 #- event_name: XYZ_UP
 #  event_category: ABC
@@ -700,3 +713,251 @@ event_definitions:
       'A daemon has crashed and generated core dump'
   event_description_template:
       '{process} crashed due to {signal},{timestamp}'
+
+# Events for LACP
+- event_name: LAG_CREATE
+  event_category: LACP
+  event_ID: 15001
+  severity: LOG_INFO
+  keys: lag_id
+  event_description_template: 'Dynamic LAG {lag_id} created'
+
+- event_name: LAG_DELETE
+  event_category: LACP
+  event_ID: 15002
+  severity: LOG_INFO
+  keys: lag_id
+  event_description_template: 'Dynamic LAG {lag_id} deleted'
+
+- event_name: LAG_INTERFACE_ADD
+  event_category: LACP
+  event_ID: 15003
+  severity: LOG_INFO
+  keys: lag_id, intf_id
+  event_description_template: 'Interface {intf_id} added to LAG {lag_id} '
+
+- event_name: LAG_INTERFACE_REMOVE
+  event_category: LACP
+  event_ID: 15004
+  severity: LOG_INFO
+  keys: lag_id, intf_id
+  event_description_template: 'Interface {intf_id} removed from LAG {lag_id} '
+
+- event_name: LACP_SYSTEM_PRIORITY_SET
+  event_category: LACP
+  event_ID: 15005
+  severity: LOG_INFO
+  keys: system_priority
+  event_description_template: 'LACP system priority set to {system_priority} '
+
+- event_name: LACP_MODE_SET
+  event_category: LACP
+  event_ID: 15006
+  severity: LOG_INFO
+  keys: lag_id, lacp_mode
+  event_description_template: 'LACP mode set to {lacp_mode} for LAG {lag_id} '
+
+- event_name: LACP_SYSTEM_ID_SET
+  event_category: LACP
+  event_ID: 15007
+  severity: LOG_INFO
+  keys: system_id
+  event_description_template: 'LACP system ID set to {system_id} '
+
+- event_name: LACP_RATE_SET
+  event_category: LACP
+  event_ID: 15008
+  severity: LOG_INFO
+  keys: lag_id, lacp_rate
+  event_description_template: 'LACP rate set to {lacp_rate} for LAG {lag_id} '
+
+- event_name: LACP_PARTNER_DETECTED
+  event_category: LACP
+  event_ID: 15009
+  severity: LOG_INFO
+  keys: intf_id, lag_id, partner_sys_id
+  event_description_template:
+      'Partner is detected for interface {intf_id} LAG {lag_id} : {partner_sys_id} '
+
+- event_name: LACP_PARTNER_OUT_OF_SYNC
+  event_category: LACP
+  event_ID: 15010
+  severity: LOG_WARN
+  keys: intf_id, lag_id, actor_state, partner_state
+  event_description_template:
+      'Partner is out of sync for interface {intf_id} LAG {lag_id}. Actor state: {actor_state}, partner state {partner_state} '
+
+- event_name: LACP_PARTNER_TIMEOUT
+  event_category: LACP
+  event_ID: 15011
+  severity: LOG_WARN
+  keys: intf_id, lag_id, fsm_state
+  event_description_template:
+      'Partner is lost (timed out) for interface {intf_id} LAG {lag_id}. State: {fsm_state} '
+
+- event_name: LAG_CREATE_FAILED
+  event_category: LACP
+  event_ID: 15012
+  severity: LOG_ERR
+  keys: lag_id
+  event_description_template: 'Failed to create LAG {lag_id} '
+
+- event_name: TRUNK_SET_SUCCEEDS
+  event_category: LAG
+  event_ID : 16001
+  severity: LOG_DEBUG
+  keys: unit, lag_id
+  description:
+    'Logs the creation of trunk.'
+  event_description_template:
+      'Trunk set succeeds unit {unit} lag_id {lag_id}'
+
+- event_name: LAG_CREATION_FAILED
+  event_category: LAG
+  event_ID : 16002
+  severity: LOG_ERR
+  keys: unit, LAGID, rc, error
+  description:
+    'Logs the failure of trunk creation.'
+  event_description_template:
+      'Lag creation failed unit {unit} lag_id {lag_id} rc {rc} error {error}'
+
+- event_name: DESTROY_LAG_FAILED
+  event_category: LAG
+  event_ID : 16003
+  severity: LOG_ERR
+  keys: unit, LAGID, rc, error
+  description:
+    'Logs the failure of trunk destroy.'
+  event_description_template:
+      'Destroy lag failed on unit {unit} lag_id {lag_id} rc {rc} error {error}'
+
+- event_name: TRUNK_MEMBER_ADD_SUCCEEDS
+  event_category: LAG
+  event_ID : 16004
+  severity: LOG_DEBUG
+  keys: unit, hw_port, tid
+  description:
+    'Logs the addition of port to trunk.'
+  event_description_template:
+      'Trunk member add port succeeds on unit {unit} hw_port {hw_port} tid {tid}'
+
+- event_name: TRUNK_PORT_ATTACH_ERROR
+  event_category: LAG
+  event_ID : 16005
+  severity: LOG_ERR
+  keys: hw_port, tid, rc, error
+  description:
+    'Logs the failure of addition of port to trunk.'
+  event_description_template:
+      'Trunk port attach error on hw_port {hw_port} tid {tid} rc {rc} {error}'
+
+- event_name: FAILED_TO_SET_EGRESS_ENABLE
+  event_category: LAG
+  event_ID : 16006
+  severity: LOG_ERR
+  keys: hw_port, tid, rc, error
+  description:
+    'Logs the failure to set egress enable.'
+  event_description_template:
+      'Failed to set egress enable on hw_port {hw_port} tid {tid} rc {rc} error {error}'
+
+- event_name: FAILED_TO_DELETE_PORT
+  event_category: LAG
+  event_ID : 16007
+  severity: LOG_ERR
+  keys: hw_port, tid, rc, error
+  description:
+    'Logs the failure to delete a port.'
+  event_description_template:
+      'Failed to delete hw_port {hw_port} from tid {tid} rc {rc} error {error}'
+
+- event_name: TRUNK_PSC_SET_FAILED
+  event_category: LAG
+  event_ID : 16008
+  severity: LOG_ERR
+  keys: unit, lag_id, psc, rc, error
+  description:
+    'Logs the failure to set port selection criteria.'
+  event_description_template:
+      'Trunk psc set failed on unit {unit} lag_id {lag_id} psc {psc} rc {rc} error {error}'
+
+- event_name: COPP_INITIALIZATION_FAILURE
+  event_category: COPP
+  event_ID : 17001
+  severity: LOG_ERR
+  keys: NA
+  description:
+    'Logs COPP initialization failure.'
+  event_description_template:
+      'COPP initialization failed'
+
+- event_name: COPP_INITIALIZATION_SUCCESS
+  event_category: COPP
+  event_ID : 17002
+  severity: LOG_INFO
+  keys: NA
+  description:
+    'Logs COPP initialization success.'
+  event_description_template:
+      'COPP initialization successful'
+
+- event_name: COPP_INGRESS_FP_GROUP_CREATE_FAILURE
+  event_category: COPP
+  event_ID : 17003
+  severity: LOG_ERR
+  keys: NA
+  description:
+    'Logs ingress field processor group creation failure.'
+  event_description_template:
+      'Ingress FP Group create failed'
+
+- event_name: COPP_EGRESS_FP_GROUP_CREATE_FAILURE
+  event_category: COPP
+  event_ID : 17004
+  severity: LOG_ERR
+  keys: NA
+  description:
+    'Logs egress field processor group creation failure.'
+  event_description_template:
+      'Egress FP Group create failed'
+
+- event_name: COPP_INIT_DEFAULTS_FAILURE
+  event_category: COPP
+  event_ID : 17005
+  severity: LOG_ERR
+  keys: NA
+  description:
+    'Logs failure for initialization of default values.'
+  event_description_template:
+      'Programming defaults failed'
+
+- event_name: COPP_CLASS_PACKET_RULE_FAILURE
+  event_category: COPP
+  event_ID : 17006
+  severity: LOG_ERR
+  keys: class
+  description:
+    'Logs failure of programming queue for a CoPP packet class.'
+  event_description_template:
+      'Packet class programming failed for {class}'
+
+- event_name: COPP_CLASS_INGRESS_FP_CREATE_FAILURE
+  event_category: COPP
+  event_ID : 17007
+  severity: LOG_ERR
+  keys: class
+  description:
+    'Logs failure of programming ingress field processor for a COPP class.'
+  event_description_template:
+      'Failed to program ingress field processor rule for {class}'
+
+- event_name: COPP_CLASS_EGRESS_FP_CREATE_FAILURE
+  event_category: COPP
+  event_ID : 17008
+  severity: LOG_ERR
+  keys: class
+  description:
+    'Logs failure of programming egress field processor for a COPP class.'
+  event_description_template:
+      'Failed to program egress rule for {class}'

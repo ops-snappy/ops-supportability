@@ -8,10 +8,10 @@
       - "show version"
       - "show system"
       - "show interface mgmt"
+      - "show interface dom"
       - "show vlan"
       - "show ntp status"
       - "show events"
-      - "show interface loopback"
 
 # Show Tech NTP Feature Definition
   feature:
@@ -158,6 +158,7 @@
     feature_name: ecmp
     cli_cmds:
       - "show ip ecmp"
+
 # Show Tech MSTP Feature Definition
   feature:
   -
@@ -167,3 +168,52 @@
       - "show spanning-tree detail"
       - "show spanning-tree mst-config"
       - "show spanning-tree mst"
+# Show Tech SFLOW Feature Definition
+  feature:
+  -
+    feature_desc: "sFlow"
+    feature_name: sflow
+    cli_cmds:
+       - "show sflow"
+
+# Show Tech Version Feature Definition
+  feature:
+  -
+    feature_desc: "Image versioning scheme"
+    feature_name: version
+    cli_cmds:
+      - "show version detail"
+
+# Show ospf
+  feature:
+  -
+    feature_desc: "Open Shortest Path First version 2 Protocol"
+    feature_name: ospfv2
+    cli_cmds:
+      - "show ip ospf"
+      - "show ip ospf interface"
+      - "show ip ospf neighbor"
+      - "show ip ospf route"
+
+# Show Tech Unicast Routing Feature Definition
+  feature:
+  -
+    feature_desc: "Unicast Routing Information"
+    feature_name: ucast-routing
+    cli_cmds:
+      - "show ip route"
+      - "show ipv6 route"
+      - "show rib"
+      - "show ip interface"
+      - "show ipv6 interface"
+      - "show arp"
+      - "show ipv6 neighbors"
+      - "show interface loopback"
+
+# Show Tech COPP Feature Definition
+  feature:
+  -
+    feature_desc: "Control Plane Policing"
+    feature_name: copp
+    cli_cmds:
+      - "show copp statistics"

@@ -114,16 +114,8 @@ trim_white_space(char *string)
 int
 compile_corefile_pattern (regex_t * regexst, const char * pattern)
 {
-   int status = regcomp (regexst, pattern, REG_EXTENDED|REG_NEWLINE);
-   if (status != 0)
-   {
-      char error_message[REGEX_COMP_ERR];
-      regerror (status, regexst, error_message, REGEX_COMP_ERR);
-      printf ("Error in CoreDumpPattern '%s': %s\n",
-            pattern, error_message);
-      return -1;
-   }
-   return 0;
+    int status = regcomp (regexst, pattern, REG_EXTENDED|REG_NEWLINE);
+    return status;
 }
 
 /* Function       : sev_level
